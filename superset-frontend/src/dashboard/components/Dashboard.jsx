@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -95,7 +96,7 @@ class Dashboard extends React.PureComponent {
   }
 
   componentDidMount() {
-    console.log("Dashboard component mounted Felipe");
+    console.log('Dashboard component mounted Felipe');
 
     const bootstrapData = getBootstrapData();
     const { dashboardState, layout } = this.props;
@@ -122,57 +123,29 @@ class Dashboard extends React.PureComponent {
     }
     window.addEventListener('visibilitychange', this.onVisibilityChange);
     this.applyCharts();
+    this.setupSocketConnection(); }
+ 
 
-    
-   
-    // Llamar a la nueva función para configurar la conexión del socket
-    this.setupSocketConnection();
-    
-  }
-  setupSocketConnection() {
-    axios.get('https://pofc.posicion.mx/auth/get-token', {
-      headers: {
-        'x-api-key': 'JusasaJ313414J'
-      }
-    })
-    .then(response => {
-      const token = response.data.token;
-      const user_id = "1";  // Ajusta el user_id según tus necesidades
+
+    setupSocketConnection() {
+      axios.post('http://localhost:8000/auth/get-token', {},{//axios.get('https://pofc.posicion.mx/auth/get-token', {
+        headers: {
+          'x-api-key': 'JusasaJ313414J'
+        }
+     })
+      .then(response => {
+         const token = response.data.token;
+          const user_id = "1";  // Ajusta el user_id según tus necesidades
     
       // Conectarse al servidor de socket.io con el token
-      const socket = io('https://www.posicion.mx:4000', {
-        query: { token }
-      });
+          const socket = io('http://localhost:4000', {//const socket = io('https://www.posicion.mx:4000', {
+          query: { token }
+        });
     
       // Manejar eventos del socket
       socket.on('connect', () => {
         console.log('Connected to Socket.IO server', socket.id);
         socket.emit('join_room', { token: token, user_id: user_id });
-    
-        // Envía el socket_id y user_id a FastAPI para asociarlos con el usuario actual
-        fetch('https://pofc.posicion.mx/socketio/associate_socket', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ socket_id: socket.id, user_id: user_id })
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Asociación exitosa:', data);
-        })
-        .catch(error => {
-          console.error('Error asociando socket_id:', error);
-        });
-      });
-    
-      socket.on('message', (data) => {
-        console.log('Mensaje recibido:', data);
-      });
-    
-      socket.on('disconnect', () => {
-        console.log('Desconectado del servidor de sockets');
       });
     })
     .catch(error => {
