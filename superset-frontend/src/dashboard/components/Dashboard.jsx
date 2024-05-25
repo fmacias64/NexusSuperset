@@ -71,6 +71,65 @@ const defaultProps = {
   userId: '',
 };
 
+window.refreshChartBySocket = (slice_id, dashboard_id) => {
+  function getReactFiber(element) {
+    for (const key in element) {
+      if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
+        return element[key];
+      }
+    }
+    return null;
+  }
+
+  function findReactRoot() {
+    const elements = document.querySelectorAll('*');
+    for (const element of elements) {
+      const fiberNode = getReactFiber(element);
+      if (fiberNode && fiberNode.return && fiberNode.return.stateNode && fiberNode.return.stateNode.constructor.name === 'App') {
+        return fiberNode.return.stateNode;
+      }
+    }
+    return null;
+  }
+
+  function findComponentByType(root, typeName) {
+    const fiberNode = getReactFiber(root);
+    if (!fiberNode) return null;
+
+    function traverse(fiber) {
+      if (fiber.elementType && fiber.elementType.name === typeName) {
+        return fiber.stateNode;
+      }
+      if (fiber.child) {
+        const childResult = traverse(fiber.child);
+        if (childResult) return childResult;
+      }
+      if (fiber.sibling) {
+        return traverse(fiber.sibling);
+      }
+      return null;
+    }
+
+    return traverse(fiberNode);
+  }
+
+  const rootContainer = findReactRoot();
+  if (rootContainer) {
+    const sliceHeader = findComponentByType(rootContainer, 'SliceHeader');
+    if (sliceHeader) {
+      if (typeof sliceHeader.props.forceRefresh === 'function') {
+        sliceHeader.props.forceRefresh(slice_id, dashboard_id);
+        console.log('Force refresh triggered for slice', slice_id);
+      } else {
+        console.error('forceRefresh function not found on SliceHeader component.');
+      }
+    } else {
+      console.error('Unable to find SliceHeader component.');
+    }
+  }
+};
+
+
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
 
@@ -128,30 +187,42 @@ class Dashboard extends React.PureComponent {
 
 
     setupSocketConnection() {
-      axios.post('http://localhost:8000/auth/get-token', {},{//axios.get('https://pofc.posicion.mx/auth/get-token', {
+      axios.post('http://localhost:8000/auth/get-token', {}, {
         headers: {
           'x-api-key': 'JusasaJ313414J'
         }
-     })
+      })
       .then(response => {
-         const token = response.data.token;
-          const user_id = "1";  // Ajusta el user_id según tus necesidades
-    
-      // Conectarse al servidor de socket.io con el token
-          const socket = io('http://localhost:4000', {//const socket = io('https://www.posicion.mx:4000', {
+        const token = response.data.token;
+        const user_id = "1";  // Ajusta el user_id según tus necesidades
+  
+        // Conectarse al servidor de socket.io con el token
+        const socket = io('http://localhost:4000', {
           query: { token }
         });
-    
-      // Manejar eventos del socket
-      socket.on('connect', () => {
-        console.log('Connected to Socket.IO server', socket.id);
-        socket.emit('join_room', { token: token, user_id: user_id });
+  
+        // Manejar eventos del socket
+        socket.on('connect', () => {
+          console.log('Connected to Socket.IO server', socket.id);
+          socket.emit('join_room', { token: token, user_id: user_id });
+        });
+  
+        // Manejar los mensajes de socket_action
+        socket.on('force_refresh', ({ type, slice_id, dashboard_id }) => {
+          if (typeof window[type] === 'function') {
+            console.log('Escucho', socket.id);
+            window[type](slice_id, dashboard_id);
+          } else {
+            console.error(`Action ${type} is not a valid function`);
+          }
+        });
+  
+      })
+      .catch(error => {
+        console.error('Error obteniendo el token:', error);
       });
-    })
-    .catch(error => {
-      console.error('Error obteniendo el token:', error);
-    });
-  }
+    }
+  
 
   componentDidUpdate() {
     this.applyCharts();
