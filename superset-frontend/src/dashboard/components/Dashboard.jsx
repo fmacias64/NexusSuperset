@@ -71,64 +71,296 @@ const defaultProps = {
   userId: '',
 };
 
-window.refreshChartBySocket = (slice_id, dashboard_id) => {
-  function getReactFiber(element) {
-    for (const key in element) {
-      if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
-        return element[key];
-      }
+// Function to find the React component from a DOM node
+function findReactComponent(dom) {
+  for (const key in dom) {
+    if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
+      return dom[key];
     }
+  }
+  return null;
+}
+
+// Function to navigate from a component to the root
+function navigateToRoot(reactComponent) {
+  if (!reactComponent) return null;
+
+  let currentComponent = reactComponent;
+  while (currentComponent) {
+    if (!currentComponent.return) {
+      
+      return currentComponent;
+    }
+
+    currentComponent = currentComponent.return;
+  }
+}
+
+// Function to find any React component in the document
+function findAnyReactComponent() {
+  const allElements = document.querySelectorAll('*');
+  for (let i = 0; i < allElements.length; i++) {
+    const element = allElements[i];
+    const reactComponent = findReactComponent(element);
+    if (reactComponent) {
+      return reactComponent;
+    }
+  }
+  return null;
+}
+
+// Function to traverse the React tree and find the App component
+function findAppComponent(reactComponent) {
+  if (!reactComponent) return null;
+
+  let currentComponent = reactComponent;
+  while (currentComponent) {
+    const componentName = currentComponent.elementType?.displayName || currentComponent.elementType?.name || currentComponent.type?.displayName || currentComponent.type?.name || (typeof currentComponent.elementType === 'string' ? currentComponent.elementType : 'Unknown');
+    
+    if (componentName === 'App') {
+     
+      return currentComponent;
+    }
+
+    // Move to the parent component
+    currentComponent = currentComponent.return;
+  }
+
+  return null;
+}
+
+// Combined function to search downward from root and also by slice_id and dashboard_id
+
+
+/* function searchComponent(rootComponent, targetName, sliceId, dashboardId) {
+  if (!rootComponent) {
+    console.log('No root component provided.');
     return null;
   }
 
-  function findReactRoot() {
-    const elements = document.querySelectorAll('*');
-    for (const element of elements) {
-      const fiberNode = getReactFiber(element);
-      if (fiberNode && fiberNode.return && fiberNode.return.stateNode && fiberNode.return.stateNode.constructor.name === 'App') {
-        return fiberNode.return.stateNode;
-      }
+  function traverseReactTree(reactComponent, targetName, sliceId, dashboardId) {
+    if (!reactComponent) return null;
+
+    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+    const props = reactComponent.memoizedProps || {};
+
+    if (componentName === targetName && props.slice_id === sliceId && props.dashboard_id === dashboardId) {
+      return reactComponent;
     }
+
+    // Recursively search child components
+    if (reactComponent.child) {
+      const foundInChild = traverseReactTree(reactComponent.child, targetName, sliceId, dashboardId);
+      if (foundInChild) return foundInChild;
+    }
+
+    // Search sibling components
+    if (reactComponent.sibling) {
+      const foundInSibling = traverseReactTree(reactComponent.sibling, targetName, sliceId, dashboardId);
+      if (foundInSibling) return foundInSibling;
+    }
+
     return null;
   }
 
-  function findComponentByType(root, typeName) {
-    const fiberNode = getReactFiber(root);
-    if (!fiberNode) return null;
+  const targetComponent = traverseReactTree(rootComponent, targetName, sliceId, dashboardId);
+  if (targetComponent) {
+    console.log(`Found ${targetName} component with slice_id ${sliceId} and dashboard_id ${dashboardId}:`, targetComponent);
+    console.log('Props:', targetComponent.memoizedProps);
+    console.log('State:', targetComponent.memoizedState);
 
-    function traverse(fiber) {
-      if (fiber.elementType && fiber.elementType.name === typeName) {
-        return fiber.stateNode;
-      }
-      if (fiber.child) {
-        const childResult = traverse(fiber.child);
-        if (childResult) return childResult;
-      }
-      if (fiber.sibling) {
-        return traverse(fiber.sibling);
-      }
-      return null;
+    // Highlight the target component element if it has a DOM node
+    if (targetComponent.stateNode instanceof HTMLElement) {
+      targetComponent.stateNode.style.border = '2px solid green';
+      targetComponent.stateNode.style.backgroundColor = 'lightyellow';
+      console.log(`${targetName} component highlighted:`, targetComponent.stateNode);
     }
+    return targetComponent;
+  } else {
+    console.log(`${targetName} component with slice_id ${sliceId} and dashboard_id ${dashboardId} not found.`);
+    return null;
+  }
+} */
 
-    return traverse(fiberNode);
+function searchComponent(rootComponent, targetName, sliceId, dashboardId,type) {
+  if (!rootComponent) {
+    
+    return null;
   }
 
-  const rootContainer = findReactRoot();
-  if (rootContainer) {
-    const sliceHeader = findComponentByType(rootContainer, 'SliceHeader');
-    if (sliceHeader) {
-      if (typeof sliceHeader.props.forceRefresh === 'function') {
-        sliceHeader.props.forceRefresh(slice_id, dashboard_id);
-        console.log('Force refresh triggered for slice', slice_id);
-      } else {
-        console.error('forceRefresh function not found on SliceHeader component.');
+  
+
+  function traverseReactTree(reactComponent, targetName, sliceId, dashboardId) {
+    if (!reactComponent) return null;
+
+    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+    const props = reactComponent.memoizedProps || {};
+
+    
+
+    if (componentName === targetName) {
+      if (type === 'refreshChartBySocket' && props.slice?.slice_id === sliceId) {
+        
+        return reactComponent;
+      } else if (type === 'applyCrossFilterBySocket' && props.chartId === sliceId) {
+        
+        return reactComponent;
       }
+    }
+    
+    // if (componentName === targetName && props.slice.slice_id === sliceId && props.dashboardId === dashboardId) {
+    //   console.log('Found target component:', reactComponent);
+    //   return reactComponent;
+    // }
+
+    // Recursively search child components
+    if (reactComponent.child) {
+      
+      const foundInChild = traverseReactTree(reactComponent.child, targetName, sliceId, dashboardId);
+      if (foundInChild) return foundInChild;
+    }
+
+    // Search sibling components
+    if (reactComponent.sibling) {
+      
+      const foundInSibling = traverseReactTree(reactComponent.sibling, targetName, sliceId, dashboardId);
+      if (foundInSibling) return foundInSibling;
+    }
+
+    return null;
+  }
+
+  const targetComponent = traverseReactTree(rootComponent, targetName, sliceId, dashboardId);
+  if (targetComponent) {
+    
+
+    // Highlight the target component element if it has a DOM node
+    if (targetComponent.stateNode instanceof HTMLElement) {
+      targetComponent.stateNode.style.border = '2px solid green';
+      targetComponent.stateNode.style.backgroundColor = 'lightyellow';
+      
+    }
+    return targetComponent;
+  } else {
+    
+    return null;
+  }
+}
+
+
+const generateCrossFilterDataMask = (selectedValues, groupby, labelMap) => value => {
+  const selected = Object.values(selectedValues);
+  let values;
+  if (selected.includes(value)) {
+    values = selected.filter(v => v !== value);
+  } else {
+    values = [value];
+  }
+
+  const groupbyValues = values.map(value => labelMap[value]);
+
+  return {
+    dataMask: {
+      extraFormData: {
+        filters: values.length === 0 ? [] : groupby.map((col, idx) => {
+          const val = groupbyValues.map(v => v[idx]);
+          if (val === null || val === undefined) {
+            return { col, op: 'IS NULL' };
+          }
+          return { col, op: 'IN', val: val };
+        }),
+      },
+      filterState: {
+        value: groupbyValues.length ? groupbyValues : null,
+        selectedValues: values.length ? values : null,
+      },
+    },
+    isCurrentValueSelected: selected.includes(value),
+  };
+};
+
+const applyCrossFilterAndUpdate = (component, filter_super) => {
+  const [columnName, value] = filter_super.split('=');
+
+  // Genera la máscara de datos utilizando generateCrossFilterDataMask
+  const dataMask = generateCrossFilterDataMask(
+    {}, // selectedValues, asumiendo que es un objeto vacío para empezar
+    [columnName], // groupby array
+    { [value]: [value] } // labelMap, asignando el filtro
+  )(value);
+
+  if (dataMask) {
+    // Verificar si component.props.memoizedProps y component.props.memoizedProps.actions están definidos
+    const actions = component.memoizedProps?.actions;
+    if (actions && actions.updateDataMask) {
+      // Aplica la máscara de datos utilizando updateDataMask
+      actions.updateDataMask(component.memoizedProps.chartId, dataMask.dataMask);
+
+      // Fuerza la actualización del gráfico
+      component.forceUpdate();
     } else {
-      console.error('Unable to find SliceHeader component.');
+      console.error('Component memoizedProps or actions not found or updateDataMask is missing:', component);
     }
   }
 };
 
+window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = null) => {
+  let rootComponent = null; // Definir rootComponent dentro del alcance de la función
+
+  // Main execution
+  const reactComponent = findAnyReactComponent();
+  if (!reactComponent) {
+    console.log('No React component found in the document.');
+    return;
+  }
+
+  let appComponent = findAppComponent(reactComponent);
+  if (!appComponent) {
+    console.log('App component not found, navigating to root.');
+    rootComponent = navigateToRoot(reactComponent);
+  } else {
+    rootComponent = appComponent;
+  }
+
+  if (!rootComponent) {
+    console.log('Root component not found.');
+    return;
+  }
+
+  console.log('Root component:', rootComponent);
+
+  if (type === 'refreshChartBySocket') {
+    const sliceHeaderComponent = searchComponent(rootComponent, 'SliceHeader', slice_id, dashboard_id,type); // Cambiado aquí
+    if (sliceHeaderComponent) {
+      console.log('Working with SliceHeader component:');
+      console.log('Props:', sliceHeaderComponent.memoizedProps);
+      console.log('State:', sliceHeaderComponent.memoizedState);
+
+      // Check if forceRefresh exists and call it
+      const { forceRefresh } = sliceHeaderComponent.memoizedProps;
+      if (forceRefresh) {
+        console.log('Calling forceRefresh function:');
+        forceRefresh(slice_id, dashboard_id);
+      } else {
+        console.log('forceRefresh function not found in props.');
+      }
+    }
+  } 
+  else if (type === 'applyCrossFilterBySocket') {
+    const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id,type); // Cambiado aquí
+    if (chartRenderComponent) {
+      console.log('Working with ChartRender component:');
+      console.log('Props:', chartRenderComponent.memoizedProps);
+      console.log('State:', chartRenderComponent.memoizedState);
+      console.log('filter:', filter_super);
+      applyCrossFilterAndUpdate(chartRenderComponent, filter_super);
+    } else {
+      console.log('ChartRender component not found.');
+    }
+  }
+
+  console.log('Script execution completed.');
+};
 
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
@@ -207,8 +439,18 @@ class Dashboard extends React.PureComponent {
           socket.emit('join_room', { token: token, user_id: user_id });
         });
   
+        //window.handleSupersetMessage = (slice_id, dashboard_id, type, filter = null)
         // Manejar los mensajes de socket_action
-        socket.on('force_refresh', ({ type, slice_id, dashboard_id }) => {
+        socket.on('dashboard', ({ type, slice_id, dashboard_id,filter_super }) => {
+          if (typeof window.handleSupersetMessage === 'function') {
+            console.log('Escucho', socket.id);
+            window.handleSupersetMessage(slice_id, dashboard_id, type,filter_super);
+          } else {
+            console.error(`Action ${type} is not a valid function`);
+          }
+        });
+
+        /* socket.on('force_refresh', ({ type, slice_id, dashboard_id }) => {
           if (typeof window[type] === 'function') {
             console.log('Escucho', socket.id);
             window[type](slice_id, dashboard_id);
@@ -216,7 +458,16 @@ class Dashboard extends React.PureComponent {
             console.error(`Action ${type} is not a valid function`);
           }
         });
-  
+
+        socket.on('cross_filter', ({ type, slice_id, dashboard_id,filter }) => {
+          if (typeof window[type] === 'function') {
+            console.log('Escucho', socket.id);
+            window[type](slice_id, dashboard_id,filter);
+          } else {
+            console.error(`Action ${type} is not a valid function`);
+          }
+        });  
+   */
       })
       .catch(error => {
         console.error('Error obteniendo el token:', error);
