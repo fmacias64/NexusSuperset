@@ -169,6 +169,21 @@ export const DynamicEditableTitle = ({
     },
     [canEdit],
   );
+  const getDashboardIdFromUrl = () => {
+    try {
+      const url = window.location.pathname;
+      const match = url.match(/\/dashboard\/(\d+)\//);
+      if (match && match[1]) {
+        return match[1];
+      }
+      console.error('Dashboard ID not found in URL:', url);
+      return null;
+    } catch (error) {
+      console.error('Error extracting dashboard ID from URL:', error);
+      return null;
+    }
+  };
+  const dashboardId = getDashboardIdFromUrl();
 
   return (
     <div css={titleStyles} ref={containerRef}>
@@ -205,7 +220,7 @@ export const DynamicEditableTitle = ({
             ref={contentRef}
             data-test="editable-title"
           >
-            {currentTitle}
+          {dashboardId} {currentTitle}
           </span>
         )}
       </Tooltip>

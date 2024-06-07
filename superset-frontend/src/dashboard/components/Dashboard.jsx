@@ -45,6 +45,10 @@ import getLocationHash from '../util/getLocationHash';
 import isDashboardEmpty from '../util/isDashboardEmpty';
 import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
 
+import { getUrlParam } from 'src/utils/urlUtils';
+import { URL_PARAMS } from 'src/constants';
+
+
 const propTypes = {
   actions: PropTypes.shape({
     addSliceToDashboard: PropTypes.func.isRequired,
@@ -71,7 +75,67 @@ const defaultProps = {
   userId: '',
 };
 
+
+//   #######                                                                        
+//   #     # #####  ##### ###### #    # ###### #####                                
+//   #     # #    #   #   #      ##   # #      #    #                               
+//   #     # #####    #   #####  # #  # #####  #    #                               
+//   #     # #    #   #   #      #  # # #      #####                                
+//   #     # #    #   #   #      #   ## #      #   #                                
+//   #############    #   ###### #    # ###### #    #                   ### ######  
+//      #     #   ##    ####  #    # #####   ####    ##   #####  #####   #  #     # 
+//      #     #  #  #  #      #    # #    # #    #  #  #  #    # #    #  #  #     # 
+//      #     # #    #  ####  ###### #####  #    # #    # #    # #    #  #  #     # 
+//      #     # ######      # #    # #    # #    # ###### #####  #    #  #  #     # 
+//      #     # #    # #    # #    # #    # #    # #    # #   #  #    #  #  #     # 
+//      ######  #    #  ####  #    # #####   ####  #    # #    # #####  ### ######  
+//                                                                                  
+
+const getDashboardIdFromUrl = () => {
+  try {
+    const url = window.location.pathname;
+    const match = url.match(/\/dashboard\/(\d+)\//);
+    if (match && match[1]) {
+      return match[1];
+    }
+    console.error('Dashboard ID not found in URL:', url);
+    return null;
+  } catch (error) {
+    console.error('Error extracting dashboard ID from URL:', error);
+    return null;
+  }
+};
+
+
+// hay que ver si es posible guardar la ruta para encontrar todos los componentes de los dashboards, usando memoize o fijos ,
+// seguro no cambian 
+
 // Function to find the React component from a DOM node
+
+/////////////////////////////////////////////////////////////////////
+
+//   #######                                                               
+//   #       #    #  ####   ####  #    # ##### #####    ##   #####         
+//   #       ##   # #    # #    # ##   #   #   #    #  #  #  #    #        
+//   #####   # #  # #      #    # # #  #   #   #    # #    # #    #        
+//   #       #  # # #      #    # #  # #   #   #####  ###### #####         
+//   #       #   ## #    # #    # #   ##   #   #   #  #    # #   #         
+//   ####### #    #  ####   ####  #    #   #   #    # #    # #    #        
+//   #     #  ####  #    # #####   ####  #    # ###### #    # ##### ###### 
+//   #       #    # ##  ## #    # #    # ##   # #      ##   #   #   #      
+//   #       #    # # ## # #    # #    # # #  # #####  # #  #   #   #####  
+//   #       #    # #    # #####  #    # #  # # #      #  # #   #   #      
+//   #     # #    # #    # #      #    # #   ## #      #   ##   #   #      
+//   ######  ########   ## #  ##############  # ###### #    #   #   ###### 
+//   #     # #         # #   #     #    #                                  
+//   #     # #        #   #  #          #                                  
+//   ######  #####   #     # #          #                                  
+//   #   #   #       ####### #          #                                  
+//   #    #  #       #     # #     #    #                                  
+//   #     # ####### #     #  #####     #                                  
+//                                                                         
+
+////////////////////////////////////////////////////////////////////
 function findReactComponent(dom) {
   for (const key in dom) {
     if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
@@ -129,58 +193,6 @@ function findAppComponent(reactComponent) {
   return null;
 }
 
-// Combined function to search downward from root and also by slice_id and dashboard_id
-
-
-/* function searchComponent(rootComponent, targetName, sliceId, dashboardId) {
-  if (!rootComponent) {
-    console.log('No root component provided.');
-    return null;
-  }
-
-  function traverseReactTree(reactComponent, targetName, sliceId, dashboardId) {
-    if (!reactComponent) return null;
-
-    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
-    const props = reactComponent.memoizedProps || {};
-
-    if (componentName === targetName && props.slice_id === sliceId && props.dashboard_id === dashboardId) {
-      return reactComponent;
-    }
-
-    // Recursively search child components
-    if (reactComponent.child) {
-      const foundInChild = traverseReactTree(reactComponent.child, targetName, sliceId, dashboardId);
-      if (foundInChild) return foundInChild;
-    }
-
-    // Search sibling components
-    if (reactComponent.sibling) {
-      const foundInSibling = traverseReactTree(reactComponent.sibling, targetName, sliceId, dashboardId);
-      if (foundInSibling) return foundInSibling;
-    }
-
-    return null;
-  }
-
-  const targetComponent = traverseReactTree(rootComponent, targetName, sliceId, dashboardId);
-  if (targetComponent) {
-    console.log(`Found ${targetName} component with slice_id ${sliceId} and dashboard_id ${dashboardId}:`, targetComponent);
-    console.log('Props:', targetComponent.memoizedProps);
-    console.log('State:', targetComponent.memoizedState);
-
-    // Highlight the target component element if it has a DOM node
-    if (targetComponent.stateNode instanceof HTMLElement) {
-      targetComponent.stateNode.style.border = '2px solid green';
-      targetComponent.stateNode.style.backgroundColor = 'lightyellow';
-      console.log(`${targetName} component highlighted:`, targetComponent.stateNode);
-    }
-    return targetComponent;
-  } else {
-    console.log(`${targetName} component with slice_id ${sliceId} and dashboard_id ${dashboardId} not found.`);
-    return null;
-  }
-} */
 
 function searchComponent(rootComponent, targetName, sliceId, dashboardId,type) {
   if (!rootComponent) {
@@ -203,6 +215,12 @@ function searchComponent(rootComponent, targetName, sliceId, dashboardId,type) {
         
         return reactComponent;
       } else if (type === 'applyCrossFilterBySocket' && props.chartId === sliceId) {
+        
+        return reactComponent;
+      } else if (type === 'removeCrossFilterBySocket' && props.chartId === sliceId) {
+        
+        return reactComponent;
+      } else if (type === 'getCrossFilters') {
         
         return reactComponent;
       }
@@ -288,7 +306,7 @@ const applyCrossFilterAndUpdate = (component, filter_super) => {
     [columnName], // groupby array
     { [value]: [value] } // labelMap, asignando el filtro
   )(value);
-
+console.log(dataMask);
   if (dataMask) {
     // Verificar si component.props.memoizedProps y component.props.memoizedProps.actions están definidos
     const actions = component.memoizedProps?.actions;
@@ -303,6 +321,34 @@ const applyCrossFilterAndUpdate = (component, filter_super) => {
     }
   }
 };
+
+
+const removeCrossFilterAndUpdate = (component) => {
+  // Verificar si component.props.actions, component.memoizedProps.actions, o component.actions están definidos
+  const actions = component.props?.actions || component.memoizedProps?.actions || component.actions;
+  const chartId = component.props?.chartId || component.memoizedProps?.chartId || component.chartId;
+
+  if (actions && actions.updateDataMask) {
+    // Remueve la máscara de datos utilizando updateDataMask
+    actions.updateDataMask(chartId, {
+      extraFormData: { filters: [] },
+      filterState: { value: null, selectedValues: null }
+    });
+
+    // Fuerza la actualización del gráfico
+    component.forceUpdate();
+  } else {
+    console.error('Component actions not found or updateDataMask is missing:', component);
+  }
+};
+function extractCrossFilterDetails(crossFilters) {
+  return crossFilters.map(filter => ({
+    column: filter.column,
+    name: filter.name,
+    value: filter.value,
+    emitterId: filter.emitterId,
+  }));
+}
 
 window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = null) => {
   let rootComponent = null; // Definir rootComponent dentro del alcance de la función
@@ -358,7 +404,29 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
       console.log('ChartRender component not found.');
     }
   }
+  else if (type === 'removeCrossFilterBySocket') {
+    const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id, type); // Cambiado aquí
+    if (chartRenderComponent) {
+      console.log('Working with ChartRender component:');
+      console.log('Props:', chartRenderComponent.memoizedProps);
+      console.log('State:', chartRenderComponent.memoizedState);
+      removeCrossFilterAndUpdate(chartRenderComponent);
+    } else {
+      console.log('ChartRender component not found.');
+    }
+  }
+  else if (type === 'getCrossFilters') {
+  const crossFiltersVerticalCollapse = searchComponent(rootComponent, 'CrossFiltersVerticalCollapse', slice_id, dashboard_id, type);
+  if (crossFiltersVerticalCollapse) {
+    console.log('Working with CrossFiltersVerticalCollapse component:');
+    console.log('Props:', crossFiltersVerticalCollapse.memoizedProps);
 
+    const crossFilterDetails = extractCrossFilterDetails(crossFiltersVerticalCollapse.memoizedProps.crossFilters);
+    console.log('Cross-filter details:', crossFilterDetails);
+  } else {
+    console.log('CrossFiltersVerticalCollapse component not found.');
+  }
+}
   console.log('Script execution completed.');
 };
 
@@ -384,7 +452,257 @@ class Dashboard extends React.PureComponent {
     this.appliedFilters = props.activeFilters ?? {};
     this.appliedOwnDataCharts = props.ownDataCharts ?? {};
     this.onVisibilityChange = this.onVisibilityChange.bind(this);
+    // insertado para auxilio de las funciones para sacar queries
+    this.accessToken = null;
+    this.refreshToken = null;
+    this.tokenExpiry = 0;
   }
+
+  async getAccessToken() {
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    // Comprobar si el token sigue siendo válido
+    if (currentTime < this.tokenExpiry) {
+      return this.accessToken;
+    }
+
+    const loginData = {
+      username: "admin",
+      password: "JusasaJ313414J",
+      provider: "db",
+      refresh: true
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      'accept': 'application/json'
+    };
+
+    try {
+      const response = await axios.post('http://localhost:8088/api/v1/security/login', loginData, { headers });
+
+      if (response.status === 200) {
+        const tokens = response.data;
+        this.accessToken = tokens.access_token;
+        this.refreshToken = tokens.refresh_token;
+        this.tokenExpiry = currentTime + 60 * 30; // Asume una duración de 1/2 hora
+
+        return this.accessToken;
+      } else {
+        throw new Error(`Failed to get access token: ${response.status}, ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error fetching access token:', error);
+      throw error;
+    }
+  }
+  async getCsrfToken() {
+    try {
+      const response = await axios.get('http://localhost:8088/api/v1/security/csrf_token/', {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        return response.data.result;
+      } else {
+        throw new Error(`Failed to get CSRF token: ${response.status}, ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error fetching CSRF token:', error);
+      throw error;
+    }
+  }
+
+
+  parseParams(params) {
+    return JSON.parse(params);
+  }
+
+//   async fetchChartData(slice_id) {
+//     try {
+//         console.log('Fetching access token...');
+//         const token = await this.getAccessToken();  // Obtener el token de acceso
+//         console.log('Access token obtained:', token);
+
+//         console.log('Fetching CSRF token...');
+//         const csrfToken = await this.getCsrfToken();  // Obtener el token CSRF
+//         console.log('CSRF token obtained:', csrfToken);
+
+//         // Paso 1: Obtener detalles del gráfico desde la API de Superset
+//         console.log(`Fetching chart details for slice_id ${slice_id}...`);
+//         const chartDetailsResponse = await axios.get(`/api/v1/chart/${slice_id}`, {
+//             headers: {
+//                 'Authorization': `Bearer ${token}`,
+//                 'Accept': 'application/json'
+//             }
+//         });
+//         const chartDetails = chartDetailsResponse.data.result;
+//         console.log('Chart details obtained:', chartDetails);
+
+//         // Paso 2: Extraer 'params' y 'query_context' del resultado
+//         const params = chartDetails.params;
+//         const query_context = chartDetails.query_context;
+//         console.log('Params:', params);
+//         console.log('Query context:', query_context);
+
+//         // Paso 3: Formatear los datos para la petición a 'explore_json'
+//         const formData = this.parseParams(params);
+//         formData.slice_id = slice_id;
+
+//         // Obtener el native_filters_key si es necesario
+//         const nativeFilterKeyValue = getUrlParam(URL_PARAMS.nativeFiltersKey);
+//         if (nativeFilterKeyValue) {
+//             formData.native_filters_key = nativeFilterKeyValue;
+//         }
+//         console.log('Form data:', formData);
+
+//         // Paso 4: Construir el objeto formData completo
+//         const completeFormData = {
+//             datasource: "1__table",
+//             viz_type: "bubble",
+//             slice_id: slice_id,
+//             url_params: {
+//                 native_filters_key: nativeFilterKeyValue
+//             },
+//             series: "region",
+//             entity: "country_name",
+//             x: "sum__SP_RUR_TOTL_ZS",
+//             y: "sum__SP_DYN_LE00_IN",
+//             adhoc_filters: formData.adhoc_filters,
+//             size: "sum__SP_POP_TOTL",
+//             max_bubble_size: "50",
+//             limit: 0,
+//             color_scheme: "supersetColors",
+//             show_legend: true,
+//             left_margin: "auto",
+//             x_axis_format: "SMART_NUMBER",
+//             x_ticks_layout: "auto",
+//             bottom_margin: "auto",
+//             y_axis_format: "SMART_NUMBER",
+//             y_axis_bounds: [null, null],
+//             compare_lag: "10",
+//             compare_suffix: "o10Y",
+//             country_fieldtype: "cca3",
+//             granularity_sqla: "year",
+//             groupby: [],
+//             markup_type: "markdown",
+//             row_limit: 50000,
+//             show_bubbles: true,
+//             time_range: "2011-01-01 : 2011-01-02",
+//             shared_label_colors: {},
+//             extra_filters: [],
+//             extra_form_data: {},
+//             dashboardId: 1
+//         };
+//         console.log('Complete form data:', completeFormData);
+
+//         // Parámetros de cadena de consulta
+//         const queryParams = new URLSearchParams({
+//             form_data: JSON.stringify({ slice_id }),
+//             query: 'true'
+//         }).toString();
+//         console.log('Query params:', queryParams);
+
+//         // Paso 5: Hacer la petición a 'explore_json' para obtener el query
+//         console.log('Fetching query from explore_json...');
+//         const exploreResponse = await axios.post(`/superset/explore_json/?${queryParams}`, completeFormData, {
+//             headers: {
+//                 'Authorization': `Bearer ${token}`,
+//                 'Content-Type': 'application/json',
+//                 'Accept': 'application/json',
+//                 'X-CSRFToken': csrfToken  // Usar el token CSRF obtenido
+//             }
+//         });
+
+//         console.log('Explore response:', exploreResponse.data);
+
+//         // Verificar la estructura de la respuesta antes de acceder a 'result'
+//         if (exploreResponse.data && Array.isArray(exploreResponse.data.result) && exploreResponse.data.result.length > 0) {
+//             // Paso 6: Extraer y retornar el query del resultado
+//             const queryResult = exploreResponse.data.result[0].query;
+//             return queryResult;
+//         } else {
+//             console.error('Unexpected response structure:', exploreResponse.data);
+//             throw new Error('Unexpected response structure');
+//         }
+
+//     } catch (error) {
+//         console.error('Error fetching chart data:', error);
+//         throw error;
+//     }
+// }
+
+
+  /* async fetchChartData(slice_id) {
+    try {
+      const token = await this.getAccessToken();  // Obtener el token de acceso
+
+      // Paso 1: Obtener detalles del gráfico desde la API de Superset
+      const chartDetailsResponse = await axios.get(`/api/v1/chart/${slice_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      const chartDetails = chartDetailsResponse.data.result;
+
+      // Paso 2: Extraer 'params' y 'query_context' del resultado
+      const params = chartDetails.params;
+      const query_context = chartDetails.query_context;
+
+      // Paso 3: Formatear los datos para la petición a 'explore_json'
+      const formData = this.parseParams(params);
+      formData.slice_id = slice_id;
+
+      // Obtener el native_filters_key si es necesario
+      const nativeFilterKeyValue = getUrlParam(URL_PARAMS.nativeFiltersKey);
+      if (nativeFilterKeyValue) {
+        formData.native_filters_key = nativeFilterKeyValue;
+      }
+
+      const queryParams = new URLSearchParams({
+        form_data: JSON.stringify({ slice_id }),
+        query: 'true'
+    }).toString()
+
+      // Paso 4: Hacer la petición a 'explore_json' para obtener el query
+      const exploreResponse = await axios.post(`/superset/explore_json/?${queryParams}`, completeFormData, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRFToken': csrfToken  // Usar el token CSRF obtenido
+        }
+    });
+
+
+    //   const exploreResponse = await axios.post('/superset/explore_json/', {
+     //   formData: formData,
+    //    resultFormat: 'json',
+     //   resultType: 'query'
+    //  }, {
+    //    headers: {
+    //      'Authorization': `Bearer ${token}`,
+    //      'Accept': 'application/json'
+    //    }
+    //  }); 
+
+      // Paso 5: Extraer y retornar el query del resultado
+      const queryResult = exploreResponse.data.result[0].query;
+      return queryResult;
+
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      throw error;
+    }
+  } */
+
+componentDidUpdate() {
+  this.applyCharts();
+}
+
 
   componentDidMount() {
     console.log('Dashboard component mounted Felipe');
@@ -448,7 +766,46 @@ class Dashboard extends React.PureComponent {
           } else {
             console.error(`Action ${type} is not a valid function`);
           }
+          this.fetchChartData(5)
+          .then(query => console.log('Query:', query))
+          .catch(error => console.error('Error:', error));
         });
+        
+
+      socket.on('request_dashboard_id', (data) => {
+        const dashboardId = getDashboardIdFromUrl();  // Función para obtener el ID del dashboard desde la URL
+        const userId = data.user_id;  // Ajustar esto para obtener el user_id del mensaje original
+        
+
+        const message = {
+          room: userId,
+          type: 'dashboard_id_response',
+          dashboard_id: dashboardId,
+          socket_id: socket.id,
+          user_id: userId  // Mantener el user_id original
+        };
+
+      if (dashboardId) {
+         socket.emit('message', message);
+         console.log('Dashboard ID response emitted:', message);
+      }
+    });
+
+        /* socket.on('request_dashboard_id', () => {
+          const dashboardId = getDashboardIdFromUrl();
+          const userId = '1'; // Ajusta esto según sea necesario
+          const message = {
+          room: userId,
+          type: 'dashboard_id_response',
+          dashboard_id: dashboardId,
+          socket_id: socket.id,
+          timestamp:timesatmp,
+          };
+          if (dashboardId) {
+            socket.emit('message', message);
+            console.log('Dashboard ID response emitted:', { dashboard_id: dashboardId, socket_id: socket.id }); 
+          }
+        }); */
 
         /* socket.on('force_refresh', ({ type, slice_id, dashboard_id }) => {
           if (typeof window[type] === 'function') {
@@ -475,10 +832,7 @@ class Dashboard extends React.PureComponent {
     }
   
 
-  componentDidUpdate() {
-    this.applyCharts();
-  }
-
+    
   UNSAFE_componentWillReceiveProps(nextProps) {
     const currentChartIds = getChartIdsFromLayout(this.props.layout);
     const nextChartIds = getChartIdsFromLayout(nextProps.layout);

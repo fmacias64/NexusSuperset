@@ -22,6 +22,7 @@ import cx from 'classnames';
 import { css, styled, SupersetTheme, t } from '@superset-ui/core';
 import { Tooltip } from 'src/components/Tooltip';
 import CertifiedBadge from '../CertifiedBadge';
+import { id } from 'spec/fixtures/mockDatasource';
 
 export interface EditableTitleProps {
   canEdit?: boolean;
@@ -44,6 +45,7 @@ export interface EditableTitleProps {
 const StyledCertifiedBadge = styled(CertifiedBadge)`
   vertical-align: middle;
 `;
+
 
 export default function EditableTitle({
   canEdit = false,
@@ -170,6 +172,29 @@ export default function EditableTitle({
       ? { height: `${contentBoundingRect.height}px` }
       : undefined;
 
+  const getSliceIdFromUrl = (url) => {
+    try {
+      if (!url) {
+        console.error('URL is empty or undefined');
+        return null;
+      }
+
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      const sliceId = urlParams.get('slice_id');
+
+      if (!sliceId) {
+        console.error('slice_id not found in URL:', url);
+        return null;
+      }
+
+      return sliceId;
+    } catch (error) {
+      console.error('Error extracting slice_id from URL:', error, 'URL:', url);
+      return null;
+    }
+  };
+
+  const sli = getSliceIdFromUrl(url);
   // Create a textarea when we're editing a multi-line value, otherwise create an input (which may
   // be text or a button).
   let titleComponent =
@@ -217,6 +242,7 @@ export default function EditableTitle({
       </Tooltip>
     );
   }
+
   if (!canEdit) {
     // don't actually want an input in this case
     titleComponent = url ? (
@@ -259,6 +285,7 @@ export default function EditableTitle({
           />{' '}
         </>
       )}
+      {sli && `${sli} `}
       {titleComponent}
     </span>
   );
