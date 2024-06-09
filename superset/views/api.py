@@ -135,3 +135,32 @@ class Api(BaseSupersetView):
 
             self.query_context_factory = QueryContextFactory()
         return self.query_context_factory
+
+
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from superset.views.base_api import BaseSupersetApi
+from superset import appbuilder
+
+# ... (tu lógica para obtener el query SQL: obtener_query_sql)
+
+class CustomApi(BaseSupersetApi):
+    resource_name = "custom_api"  # Nombre del recurso en la API
+
+    @expose("/api/get_query/<int:slice_id>", methods=["GET"])
+    @jwt_required()  # Requiere autenticación JWT
+    def get_query(self, slice_id):
+        """Obtiene el query SQL de un slice específico."""
+
+        # Verificar permisos (opcional)
+        # Puedes agregar lógica aquí para verificar si el usuario tiene permiso para acceder a este slice
+
+        query, _ = "obtener_query_sql(slice_id)"
+        if query:
+            return jsonify({"query": query})
+        else:
+            return jsonify({"error": "No se pudo obtener el query"}), 404
+
+# Crear el blueprint
+#custom_api_bp = Blueprint("custom_api", __name__)
+#appbuilder.add_api(CustomApi)

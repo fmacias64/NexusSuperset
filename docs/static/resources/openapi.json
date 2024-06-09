@@ -13488,6 +13488,60 @@
         "tags": ["Dashboards"]
       }
     },
+    "/api/v1/dashboard/{id_or_slug}/queries": {
+      "get": {
+        "description": "Get the chart definitions for a given dashboard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id_or_slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "$ref": "#/components/schemas/ChartEntityResponseSchema"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Dashboard chart definitions"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["Dashboards"]
+      }
+    },
+
     "/api/v1/dashboard/{id_or_slug}/copy/": {
       "post": {
         "parameters": [

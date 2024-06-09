@@ -97,6 +97,7 @@ from superset.views.filters import (
     BaseFilterRelatedUsers,
     FilterRelatedOwners,
 )
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +141,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         "add_favorite",
         "remove_favorite",
         "get_charts",
+        "get_queries",
         "get_datasets",
         "get_embedded",
         "set_embedded",
@@ -442,6 +444,70 @@ class DashboardRestApi(BaseSupersetModelRestApi):
             return self.response_403()
         except DashboardNotFoundError:
             return self.response_404()
+
+   
+    @expose("/<id_or_slug>/queries", methods=("GET",))
+    #@protect()
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args, **kwargs: f"{self.__class__.__name__}.get_queries",
+        log_to_statsd=False,
+    )
+    def get_queries(self, id_or_slug: str) -> Response:
+        """Get a dashboard's chart definitions.
+        ---
+        get:
+          summary: Get a dashboard's chart definitions.
+          parameters:
+          - in: path
+            schema:
+              type: string
+            name: id_or_slug
+          responses:
+            200:
+              description: Dashboard chart definitions
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      result:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChartEntityResponseSchema'
+            400:
+              $ref: '#/components/responses/400'
+            401:
+              $ref: '#/components/responses/401'
+            403:
+              $ref: '#/components/responses/403'
+            404:
+              $ref: '#/components/responses/404'
+        """
+        try:
+            charts = DashboardDAO.get_charts_for_dashboard(id_or_slug)
+
+            # Obtener los queries de cada chart
+            queries = []
+            for chart in charts:
+                slice_id = chart.data["slice_id"]
+                url = f"http://localhost:8088/superset/explore_json/?form_data=%7B%22slice_id%22%3A{slice_id}%7D&query=true"
+                response = requests.get(url)
+
+                if response.status_code == 200:
+                    data = response.json()
+                    query = data.get("query")
+                    if query:
+                        queries.append({"slice_id": slice_id, "query": query})
+
+            return self.response(200, result=queries)
+
+        except DashboardAccessDeniedError:
+            return self.response_403()
+        except DashboardNotFoundError:
+            return self.response_404()
+
 
     @expose("/", methods=("POST",))
     @protect()
