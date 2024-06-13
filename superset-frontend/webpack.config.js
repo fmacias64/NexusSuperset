@@ -76,7 +76,6 @@ const plugins = [
   new webpack.ProvidePlugin({
     process: 'process/browser.js',
   }),
-
   // creates a manifest.json mapping of name to hashed output used in template files
   new WebpackManifestPlugin({
     publicPath: output.publicPath,
@@ -211,6 +210,7 @@ const config = {
     menu: addPreamble('src/views/menu.tsx'),
     spa: addPreamble('/src/views/index.tsx'),
     embedded: addPreamble('/src/embedded/index.tsx'),
+    devtool: isDevMode ? 'eval-cheap-module-source-map' : 'source-map',
   },
   cache: {
     type: 'filesystem', // Enable filesystem caching
@@ -320,6 +320,7 @@ const config = {
       fs: false,
       vm: require.resolve('vm-browserify'),
       path: false,
+      
     },
   },
   context: APP_DIR, // to automatically find tsconfig.json

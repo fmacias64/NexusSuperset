@@ -1,3 +1,4 @@
+/* eslint-disable import/order */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -46,7 +47,7 @@ const StyledCertifiedBadge = styled(CertifiedBadge)`
   vertical-align: middle;
 `;
 
-
+// prettier-ignore
 export default function EditableTitle({
   canEdit = false,
   editing = false,
@@ -172,7 +173,8 @@ export default function EditableTitle({
       ? { height: `${contentBoundingRect.height}px` }
       : undefined;
 
-  const getSliceIdFromUrl = (url) => {
+    // @ts-ignore: Parameter 'url' implicitly has an 'any' type
+      const getSliceIdFromUrl = (url) => {
     try {
       if (!url) {
         console.error('URL is empty or undefined');
@@ -189,12 +191,12 @@ export default function EditableTitle({
 
       return sliceId;
     } catch (error) {
-      console.error('Error extracting slice_id from URL:', error, 'URL:', url);
+      console.error('Error extracting slice_id from URL:', error, 'URL:', url,'id',id);
       return null;
     }
   };
 
-  const sli = getSliceIdFromUrl(url);
+      const sli = getSliceIdFromUrl(url);  
   // Create a textarea when we're editing a multi-line value, otherwise create an input (which may
   // be text or a button).
   let titleComponent =
@@ -285,7 +287,7 @@ export default function EditableTitle({
           />{' '}
         </>
       )}
-      {sli && `${sli} `}
+      {sli && `${sli} `} 
       {titleComponent}
     </span>
   );

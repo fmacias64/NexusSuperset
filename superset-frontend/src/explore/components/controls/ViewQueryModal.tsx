@@ -46,8 +46,6 @@ const ViewQueryModal: React.FC<Props> = props => {
   const [result, setResult] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-
   // este es el modelo a seguir en la obtencion del query
   const loadChartData = (resultType: string) => {
     setIsLoading(true);

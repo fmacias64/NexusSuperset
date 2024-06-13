@@ -359,6 +359,7 @@ class Chart extends React.Component {
   }
 
   forceRefresh() {
+    console.log('forceRefresh called');
     this.props.logEvent(LOG_ACTIONS_FORCE_REFRESH_CHART, {
       slice_id: this.props.slice.slice_id,
       is_cached: this.props.isCached,

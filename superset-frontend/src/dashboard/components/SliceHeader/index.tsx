@@ -178,6 +178,10 @@ const SliceHeader: FC<SliceHeaderProps> = ({
 
   const canExplore = !editMode && supersetCanExplore;
 
+  // Verificar que forceRefresh se está recibiendo correctamente (opcional)
+  useEffect(() => {
+    console.log('forceRefresh function received in SliceHeader:', forceRefresh);
+  }, [forceRefresh]);
   useEffect(() => {
     const headerElement = headerRef.current;
     if (canExplore) {

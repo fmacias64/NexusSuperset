@@ -170,7 +170,7 @@ export default class MainPreset extends Preset {
         new TimeGrainFilterPlugin().configure({
           key: FilterPlugins.TimeGrain,
         }),
-        new SupersetPluginChartNexus().configure({key: 'ext-nexus'}),
+        new SupersetPluginChartNexus().configure({ key: 'ext-nexus' }),
         new EchartsTreeChartPlugin().configure({ key: 'tree_chart' }),
         new EchartsSunburstChartPlugin().configure({ key: 'sunburst_v2' }),
         new HandlebarsChartPlugin().configure({ key: 'handlebars' }),

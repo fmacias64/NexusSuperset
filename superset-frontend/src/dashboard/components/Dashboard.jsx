@@ -48,6 +48,27 @@ import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
 import { getUrlParam } from 'src/utils/urlUtils';
 import { URL_PARAMS } from 'src/constants';
 
+let apiBaseUrl;
+let socketServerUrl;
+let tokenServerUrl;
+let apiKey;
+
+if (window.location.href.includes("localhost") || window.location.href.includes("127.0.0.1")) {
+  apiBaseUrl = "http://localhost:8088";
+  socketServerUrl = "http://localhost:4000";
+  tokenServerUrl = "http://localhost:8000";
+  apiKey = "JusasaJ313414J";
+} else if (window.location.href.includes("posicion")) {
+  apiBaseUrl = "http://www.posicion.mx:8088";
+  socketServerUrl = "https://www.posicion.mx:4000";
+  tokenServerUrl = "https://pofc.posicion.mx";
+  apiKey = "JusasaJ313414J";
+}
+
+// Ahora puedes usar apiBaseUrl, socketServerUrl, tokenServerUrl y apiKey en tu código
+console.log(apiBaseUrl, socketServerUrl, tokenServerUrl, apiKey);
+
+
 
 const propTypes = {
   actions: PropTypes.shape({
@@ -179,9 +200,15 @@ function findAppComponent(reactComponent) {
 
   let currentComponent = reactComponent;
   while (currentComponent) {
-    const componentName = currentComponent.elementType?.displayName || currentComponent.elementType?.name || currentComponent.type?.displayName || currentComponent.type?.name || (typeof currentComponent.elementType === 'string' ? currentComponent.elementType : 'Unknown');
+    //const componentName = currentComponent.elementType?.displayName || currentComponent.elementType?.name || currentComponent.type?.displayName || currentComponent.type?.name || (typeof currentComponent.elementType === 'string' ? currentComponent.elementType : 'Unknown');
     
-    if (componentName === 'App') {
+    if (
+      currentComponent.elementType?.displayName === 'App' ||
+      currentComponent.elementType?.name === 'App' ||
+      currentComponent.type?.displayName === 'App' ||
+      currentComponent.type?.name === 'App' ||
+      (typeof currentComponent.elementType === 'string' && currentComponent.elementType === 'App')
+    ) {
      
       return currentComponent;
     }
@@ -478,7 +505,7 @@ class Dashboard extends React.PureComponent {
     };
 
     try {
-      const response = await axios.post('http://localhost:8088/api/v1/security/login', loginData, { headers });
+      const response = await axios.post(`${apiBaseUrl}/api/v1/security/login`, loginData, { headers });
 
       if (response.status === 200) {
         const tokens = response.data;
@@ -497,7 +524,7 @@ class Dashboard extends React.PureComponent {
   }
   async getCsrfToken() {
     try {
-      const response = await axios.get('http://localhost:8088/api/v1/security/csrf_token/', {
+      const response = await axios.get(`${apiBaseUrl}/api/v1/security/csrf_token/`, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${this.accessToken}`
@@ -737,17 +764,18 @@ componentDidUpdate() {
 
 
     setupSocketConnection() {
-      axios.post('http://localhost:8000/auth/get-token', {}, {
+      axios.post(`${tokenServerUrl}/auth/get-token`, {}, {
         headers: {
-          'x-api-key': 'JusasaJ313414J'
+          'x-api-key': `${apiKey}`
         }
       })
       .then(response => {
+        console.log(tokenServerUrl);
         const token = response.data.token;
         const user_id = "1";  // Ajusta el user_id según tus necesidades
   
         // Conectarse al servidor de socket.io con el token
-        const socket = io('http://localhost:4000', {
+        const socket = io(`${socketServerUrl}`, {
           query: { token }
         });
   

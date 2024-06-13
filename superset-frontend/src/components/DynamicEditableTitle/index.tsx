@@ -173,7 +173,7 @@ export const DynamicEditableTitle = ({
     try {
       const url = window.location.pathname;
       const match = url.match(/\/dashboard\/(\d+)\//);
-      if (match && match[1]) {
+      if (match?.[1]) {
         return match[1];
       }
       console.error('Dashboard ID not found in URL:', url);
@@ -220,7 +220,7 @@ export const DynamicEditableTitle = ({
             ref={contentRef}
             data-test="editable-title"
           >
-          {dashboardId} {currentTitle}
+            {dashboardId} {currentTitle}
           </span>
         )}
       </Tooltip>

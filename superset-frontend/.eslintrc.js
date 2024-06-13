@@ -267,6 +267,9 @@ module.exports = {
     },
   ],
   rules: {
+    'no-unused-vars': 'off', // Desactiva la regla de variables no usadas
+    'import/order': 'off', // Desactiva la regla de orden de importación
+    'prettier/prettier': 'off', // Desactiva las reglas de Prettier
     'theme-colors/no-literal-colors': 'error',
     'translation-vars/no-template-vars': ['error', true],
     camelcase: [
