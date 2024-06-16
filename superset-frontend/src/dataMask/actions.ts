@@ -67,7 +67,7 @@ export function updateDataMask(
   filterId: string | number,
   dataMask: DataMask,
 ): UpdateDataMask {
-  console.log("datamask Updated")
+  console.log('datamask Updated');
   return {
     type: UPDATE_DATA_MASK,
     filterId,

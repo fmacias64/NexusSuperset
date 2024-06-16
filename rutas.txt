@@ -1,0 +1,376 @@
+Loaded your LOCAL configuration at [/home/superset/superset/superset_config.py]
+Endpoint                                         Methods    Rule                                                                                 
+-----------------------------------------------  ---------  -------------------------------------------------------------------------------------
+AdvancedDataTypeRestApi.get                      GET        /api/v1/advanced_data_type/convert                                                   
+AdvancedDataTypeRestApi.get_types                GET        /api/v1/advanced_data_type/types                                                     
+AlertView.list                                   GET        /alert/list/                                                                         
+AlertView.log                                    GET        /alert/<pk>/log/                                                                     
+AnnotationLayerRestApi.bulk_delete               DELETE     /api/v1/annotation_layer/                                                            
+AnnotationLayerRestApi.delete                    DELETE     /api/v1/annotation_layer/<int:pk>                                                    
+AnnotationLayerRestApi.get                       GET        /api/v1/annotation_layer/<int:pk>                                                    
+AnnotationLayerRestApi.get_list                  GET        /api/v1/annotation_layer/                                                            
+AnnotationLayerRestApi.info                      GET        /api/v1/annotation_layer/_info                                                       
+AnnotationLayerRestApi.post                      POST       /api/v1/annotation_layer/                                                            
+AnnotationLayerRestApi.put                       PUT        /api/v1/annotation_layer/<int:pk>                                                    
+AnnotationLayerRestApi.related                   GET        /api/v1/annotation_layer/related/<column_name>                                       
+AnnotationLayerView.get                          GET        /annotationlayer/<int:pk>/annotation                                                 
+AnnotationLayerView.list                         GET        /annotationlayer/list/                                                               
+AnnotationRestApi.bulk_delete                    DELETE     /api/v1/annotation_layer/<int:pk>/annotation/                                        
+AnnotationRestApi.delete                         DELETE     /api/v1/annotation_layer/<int:pk>/annotation/<int:annotation_id>                     
+AnnotationRestApi.get                            GET        /api/v1/annotation_layer/<int:pk>/annotation/<int:annotation_id>                     
+AnnotationRestApi.get_list                       GET        /api/v1/annotation_layer/<int:pk>/annotation/                                        
+AnnotationRestApi.info                           GET        /api/v1/annotation_layer/_info                                                       
+AnnotationRestApi.post                           POST       /api/v1/annotation_layer/<int:pk>/annotation/                                        
+AnnotationRestApi.put                            PUT        /api/v1/annotation_layer/<int:pk>/annotation/<int:annotation_id>                     
+Api.query                                        POST       /api/v1/query/                                                                       
+Api.query_form_data                              GET        /api/v1/form_data/                                                                   
+Api.time_range                                   GET        /api/v1/time_range/                                                                  
+AsyncEventsRestApi.events                        GET        /api/v1/async_event/                                                                 
+AuthDBView.login                                 GET, POST  /login/                                                                              
+AuthDBView.logout                                GET        /logout/                                                                             
+AvailableDomainsRestApi.get                      GET        /api/v1/available_domains/                                                           
+CacheRestApi.invalidate                          POST       /api/v1/cachekey/invalidate                                                          
+ChartDataRestApi.data                            POST       /api/v1/chart/data                                                                   
+ChartDataRestApi.data_from_cache                 GET        /api/v1/chart/data/<cache_key>                                                       
+ChartDataRestApi.get_data                        GET        /api/v1/chart/<int:pk>/data/                                                         
+ChartRestApi.add_favorite                        POST       /api/v1/chart/<pk>/favorites/                                                        
+ChartRestApi.bulk_delete                         DELETE     /api/v1/chart/                                                                       
+ChartRestApi.cache_screenshot                    GET        /api/v1/chart/<pk>/cache_screenshot/                                                 
+ChartRestApi.delete                              DELETE     /api/v1/chart/<pk>                                                                   
+ChartRestApi.export                              GET        /api/v1/chart/export/                                                                
+ChartRestApi.favorite_status                     GET        /api/v1/chart/favorite_status/                                                       
+ChartRestApi.get                                 GET        /api/v1/chart/<int:pk>                                                               
+ChartRestApi.get_list                            GET        /api/v1/chart/                                                                       
+ChartRestApi.import_                             POST       /api/v1/chart/import/                                                                
+ChartRestApi.info                                GET        /api/v1/chart/_info                                                                  
+ChartRestApi.post                                POST       /api/v1/chart/                                                                       
+ChartRestApi.put                                 PUT        /api/v1/chart/<pk>                                                                   
+ChartRestApi.related                             GET        /api/v1/chart/related/<column_name>                                                  
+ChartRestApi.remove_favorite                     DELETE     /api/v1/chart/<pk>/favorites/                                                        
+ChartRestApi.screenshot                          GET        /api/v1/chart/<pk>/screenshot/<digest>/                                              
+ChartRestApi.thumbnail                           GET        /api/v1/chart/<pk>/thumbnail/<digest>/                                               
+ChartRestApi.warm_up_cache                       PUT        /api/v1/chart/warm_up_cache                                                          
+CssTemplateAsyncModelView.api                    GET        /csstemplateasyncmodelview/api                                                       
+CssTemplateAsyncModelView.api_read               GET        /csstemplateasyncmodelview/api/read                                                  
+CssTemplateModelView.list                        GET        /csstemplatemodelview/list/                                                          
+CssTemplateRestApi.bulk_delete                   DELETE     /api/v1/css_template/                                                                
+CssTemplateRestApi.delete                        DELETE     /api/v1/css_template/<pk>                                                            
+CssTemplateRestApi.get                           GET        /api/v1/css_template/<int:pk>                                                        
+CssTemplateRestApi.get_list                      GET        /api/v1/css_template/                                                                
+CssTemplateRestApi.info                          GET        /api/v1/css_template/_info                                                           
+CssTemplateRestApi.post                          POST       /api/v1/css_template/                                                                
+CssTemplateRestApi.put                           PUT        /api/v1/css_template/<pk>                                                            
+CssTemplateRestApi.related                       GET        /api/v1/css_template/related/<column_name>                                           
+CurrentUserRestApi.get_me                        GET        /api/v1/me/                                                                          
+CurrentUserRestApi.get_my_roles                  GET        /api/v1/me/roles/                                                                    
+Dashboard.embedded                               GET        /dashboard/<dashboard_id_or_slug>/embedded                                           
+Dashboard.new                                    GET        /dashboard/new/                                                                      
+DashboardFilterStateRestApi.delete               DELETE     /api/v1/dashboard/<int:pk>/filter_state/<string:key>                                 
+DashboardFilterStateRestApi.get                  GET        /api/v1/dashboard/<int:pk>/filter_state/<string:key>                                 
+DashboardFilterStateRestApi.post                 POST       /api/v1/dashboard/<int:pk>/filter_state                                              
+DashboardFilterStateRestApi.put                  PUT        /api/v1/dashboard/<int:pk>/filter_state/<string:key>                                 
+DashboardModelView.api_delete                    DELETE     /dashboard/api/delete/<pk>                                                           
+DashboardModelView.api_read                      GET        /dashboard/api/read                                                                  
+DashboardModelView.download_dashboards           GET        /dashboard/export_dashboards_form                                                    
+DashboardModelView.list                          GET        /dashboard/list/                                                                     
+DashboardModelViewAsync.api_read                 GET        /dashboardasync/api/read                                                             
+DashboardPermalinkRestApi.get                    GET        /api/v1/dashboard/permalink/<string:key>                                             
+DashboardPermalinkRestApi.post                   POST       /api/v1/dashboard/<pk>/permalink                                                     
+DashboardRestApi.add_favorite                    POST       /api/v1/dashboard/<pk>/favorites/                                                    
+DashboardRestApi.bulk_delete                     DELETE     /api/v1/dashboard/                                                                   
+DashboardRestApi.copy_dash                       POST       /api/v1/dashboard/<id_or_slug>/copy/                                                 
+DashboardRestApi.delete                          DELETE     /api/v1/dashboard/<pk>                                                               
+DashboardRestApi.delete_embedded                 DELETE     /api/v1/dashboard/<id_or_slug>/embedded                                              
+DashboardRestApi.export                          GET        /api/v1/dashboard/export/                                                            
+DashboardRestApi.favorite_status                 GET        /api/v1/dashboard/favorite_status/                                                   
+DashboardRestApi.get                             GET        /api/v1/dashboard/<id_or_slug>                                                       
+DashboardRestApi.get_charts                      GET        /api/v1/dashboard/<id_or_slug>/charts                                                
+DashboardRestApi.get_datasets                    GET        /api/v1/dashboard/<id_or_slug>/datasets                                              
+DashboardRestApi.get_embedded                    GET        /api/v1/dashboard/<id_or_slug>/embedded                                              
+DashboardRestApi.get_list                        GET        /api/v1/dashboard/                                                                   
+DashboardRestApi.get_queries                     GET        /api/v1/dashboard/<id_or_slug>/queries                                               
+DashboardRestApi.import_                         POST       /api/v1/dashboard/import/                                                            
+DashboardRestApi.info                            GET        /api/v1/dashboard/_info                                                              
+DashboardRestApi.post                            POST       /api/v1/dashboard/                                                                   
+DashboardRestApi.put                             PUT        /api/v1/dashboard/<pk>                                                               
+DashboardRestApi.related                         GET        /api/v1/dashboard/related/<column_name>                                              
+DashboardRestApi.remove_favorite                 DELETE     /api/v1/dashboard/<pk>/favorites/                                                    
+DashboardRestApi.set_embedded                    POST, PUT  /api/v1/dashboard/<id_or_slug>/embedded                                              
+DashboardRestApi.thumbnail                       GET        /api/v1/dashboard/<pk>/thumbnail/<digest>/                                           
+DatabaseRestApi.available                        GET        /api/v1/database/available/                                                          
+DatabaseRestApi.catalogs                         GET        /api/v1/database/<int:pk>/catalogs/                                                  
+DatabaseRestApi.columnar_metadata                POST       /api/v1/database/columnar_metadata/                                                  
+DatabaseRestApi.columnar_upload                  POST       /api/v1/database/<int:pk>/columnar_upload/                                           
+DatabaseRestApi.csv_metadata                     POST       /api/v1/database/csv_metadata/                                                       
+DatabaseRestApi.csv_upload                       POST       /api/v1/database/<int:pk>/csv_upload/                                                
+DatabaseRestApi.delete                           DELETE     /api/v1/database/<int:pk>                                                            
+DatabaseRestApi.delete_ssh_tunnel                DELETE     /api/v1/database/<int:pk>/ssh_tunnel/                                                
+DatabaseRestApi.excel_metadata                   POST       /api/v1/database/excel_metadata/                                                     
+DatabaseRestApi.excel_upload                     POST       /api/v1/database/<int:pk>/excel_upload/                                              
+DatabaseRestApi.export                           GET        /api/v1/database/export/                                                             
+DatabaseRestApi.function_names                   GET        /api/v1/database/<int:pk>/function_names/                                            
+DatabaseRestApi.get                              GET        /api/v1/database/<int:pk>                                                            
+DatabaseRestApi.get_connection                   GET        /api/v1/database/<int:pk>/connection                                                 
+DatabaseRestApi.get_list                         GET        /api/v1/database/                                                                    
+DatabaseRestApi.import_                          POST       /api/v1/database/import/                                                             
+DatabaseRestApi.info                             GET        /api/v1/database/_info                                                               
+DatabaseRestApi.oauth2                           GET        /api/v1/database/oauth2/                                                             
+DatabaseRestApi.post                             POST       /api/v1/database/                                                                    
+DatabaseRestApi.put                              PUT        /api/v1/database/<int:pk>                                                            
+DatabaseRestApi.related                          GET        /api/v1/database/related/<column_name>                                               
+DatabaseRestApi.related_objects                  GET        /api/v1/database/<int:pk>/related_objects/                                           
+DatabaseRestApi.schemas                          GET        /api/v1/database/<int:pk>/schemas/                                                   
+DatabaseRestApi.schemas_access_for_file_upload   GET        /api/v1/database/<int:pk>/schemas_access_for_file_upload/                            
+DatabaseRestApi.select_star                      GET        /api/v1/database/<int:pk>/select_star/<path:table_name>/<schema_name>/               
+DatabaseRestApi.select_star                      GET        /api/v1/database/<int:pk>/select_star/<path:table_name>/                             
+DatabaseRestApi.table_extra_metadata             GET        /api/v1/database/<int:pk>/table_metadata/extra/                                      
+DatabaseRestApi.table_extra_metadata_deprecated  GET        /api/v1/database/<int:pk>/table_extra/<path:table_name>/<schema_name>/               
+DatabaseRestApi.table_metadata                   GET        /api/v1/database/<int:pk>/table_metadata/                                            
+DatabaseRestApi.table_metadata_deprecated        GET        /api/v1/database/<int:pk>/table/<path:table_name>/<schema_name>/                     
+DatabaseRestApi.tables                           GET        /api/v1/database/<int:pk>/tables/                                                    
+DatabaseRestApi.test_connection                  POST       /api/v1/database/test_connection/                                                    
+DatabaseRestApi.validate_parameters              POST       /api/v1/database/validate_parameters/                                                
+DatabaseRestApi.validate_sql                     POST       /api/v1/database/<int:pk>/validate_sql/                                              
+DatabaseView.action_post                         POST       /databaseview/action_post                                                            
+DatabaseView.add                                 GET, POST  /databaseview/add                                                                    
+DatabaseView.delete                              GET, POST  /databaseview/delete/<pk>                                                            
+DatabaseView.edit                                GET, POST  /databaseview/edit/<pk>                                                              
+DatabaseView.list                                GET        /databaseview/list/                                                                  
+DatabaseView.show                                GET        /databaseview/show/<pk>                                                              
+DatasetColumnsRestApi.delete                     DELETE     /api/v1/dataset/<int:pk>/column/<int:column_id>                                      
+DatasetEditor.root                               GET        /dataset/add/                                                                        
+DatasetEditor.show                               GET        /dataset/<pk>                                                                        
+DatasetMetricRestApi.delete                      DELETE     /api/v1/dataset/<int:pk>/metric/<int:metric_id>                                      
+DatasetRestApi.bulk_delete                       DELETE     /api/v1/dataset/                                                                     
+DatasetRestApi.delete                            DELETE     /api/v1/dataset/<pk>                                                                 
+DatasetRestApi.distinct                          GET        /api/v1/dataset/distinct/<column_name>                                               
+DatasetRestApi.duplicate                         POST       /api/v1/dataset/duplicate                                                            
+DatasetRestApi.export                            GET        /api/v1/dataset/export/                                                              
+DatasetRestApi.get                               GET        /api/v1/dataset/<int:pk>                                                             
+DatasetRestApi.get_list                          GET        /api/v1/dataset/                                                                     
+DatasetRestApi.get_or_create_dataset             POST       /api/v1/dataset/get_or_create/                                                       
+DatasetRestApi.import_                           POST       /api/v1/dataset/import/                                                              
+DatasetRestApi.info                              GET        /api/v1/dataset/_info                                                                
+DatasetRestApi.post                              POST       /api/v1/dataset/                                                                     
+DatasetRestApi.put                               PUT        /api/v1/dataset/<pk>                                                                 
+DatasetRestApi.refresh                           PUT        /api/v1/dataset/<pk>/refresh                                                         
+DatasetRestApi.related                           GET        /api/v1/dataset/related/<column_name>                                                
+DatasetRestApi.related_objects                   GET        /api/v1/dataset/<pk>/related_objects                                                 
+DatasetRestApi.warm_up_cache                     PUT        /api/v1/dataset/warm_up_cache                                                        
+Datasource.external_metadata                     GET        /datasource/external_metadata/<datasource_type>/<datasource_id>/                     
+Datasource.external_metadata_by_name             GET        /datasource/external_metadata_by_name/                                               
+Datasource.get                                   GET        /datasource/get/<datasource_type>/<datasource_id>/                                   
+Datasource.samples                               POST       /datasource/samples                                                                  
+Datasource.save                                  POST       /datasource/save/                                                                    
+DatasourceRestApi.get_column_values              GET        /api/v1/datasource/<datasource_type>/<int:datasource_id>/column/<column_name>/values/
+DynamicPluginsView.action                        GET, POST  /dynamic-plugins/action/<string:name>/<pk>                                           
+DynamicPluginsView.action_post                   POST       /dynamic-plugins/action_post                                                         
+DynamicPluginsView.add                           GET, POST  /dynamic-plugins/add                                                                 
+DynamicPluginsView.api                           GET        /dynamic-plugins/api                                                                 
+DynamicPluginsView.api_column_add                GET        /dynamic-plugins/api/column/add/<col_name>                                           
+DynamicPluginsView.api_column_edit               GET        /dynamic-plugins/api/column/edit/<col_name>                                          
+DynamicPluginsView.api_create                    POST       /dynamic-plugins/api/create                                                          
+DynamicPluginsView.api_delete                    DELETE     /dynamic-plugins/api/delete/<pk>                                                     
+DynamicPluginsView.api_get                       GET        /dynamic-plugins/api/get/<pk>                                                        
+DynamicPluginsView.api_read                      GET        /dynamic-plugins/api/read                                                            
+DynamicPluginsView.api_readvalues                GET        /dynamic-plugins/api/readvalues                                                      
+DynamicPluginsView.api_update                    PUT        /dynamic-plugins/api/update/<pk>                                                     
+DynamicPluginsView.delete                        GET, POST  /dynamic-plugins/delete/<pk>                                                         
+DynamicPluginsView.download                      GET        /dynamic-plugins/download/<string:filename>                                          
+DynamicPluginsView.edit                          GET, POST  /dynamic-plugins/edit/<pk>                                                           
+DynamicPluginsView.list                          GET        /dynamic-plugins/list/                                                               
+DynamicPluginsView.show                          GET        /dynamic-plugins/show/<pk>                                                           
+EmbeddedDashboardRestApi.get                     GET        /api/v1/embedded_dashboard/<uuid>                                                    
+EmbeddedView.embedded                            GET        /embedded/<uuid>                                                                     
+ExploreFormDataRestApi.delete                    DELETE     /api/v1/explore/form_data/<string:key>                                               
+ExploreFormDataRestApi.get                       GET        /api/v1/explore/form_data/<string:key>                                               
+ExploreFormDataRestApi.post                      POST       /api/v1/explore/form_data                                                            
+ExploreFormDataRestApi.put                       PUT        /api/v1/explore/form_data/<string:key>                                               
+ExplorePermalinkRestApi.get                      GET        /api/v1/explore/permalink/<string:key>                                               
+ExplorePermalinkRestApi.post                     POST       /api/v1/explore/permalink                                                            
+ExplorePermalinkView.permalink                   GET        /superset/explore/p/<key>/                                                           
+ExploreRestApi.get                               GET        /api/v1/explore/                                                                     
+ExploreView.root                                 GET        /explore/                                                                            
+ImportExportRestApi.export                       GET        /api/v1/assets/export/                                                               
+ImportExportRestApi.import_                      POST       /api/v1/assets/import/                                                               
+KV.get_value                                     GET        /kv/<int:key_id>/                                                                    
+KV.store                                         POST       /kv/store/                                                                           
+LocaleView.index                                 GET        /lang/<string:locale>                                                                
+LogModelView.list                                GET        /logmodelview/list/                                                                  
+LogModelView.show                                GET        /logmodelview/show/<pk>                                                              
+LogRestApi.get                                   GET        /api/v1/log/<int:pk>                                                                 
+LogRestApi.get_list                              GET        /api/v1/log/                                                                         
+LogRestApi.post                                  POST       /api/v1/log/                                                                         
+LogRestApi.recent_activity                       GET        /api/v1/log/recent_activity/                                                         
+MenuApi.get_menu_data                            GET        /api/v1/menu/                                                                        
+OpenApi.get                                      GET        /api/<version>/_openapi                                                              
+QueryRestApi.distinct                            GET        /api/v1/query/distinct/<column_name>                                                 
+QueryRestApi.get                                 GET        /api/v1/query/<int:pk>                                                               
+QueryRestApi.get_list                            GET        /api/v1/query/                                                                       
+QueryRestApi.get_updated_since                   GET        /api/v1/query/updated_since                                                          
+QueryRestApi.related                             GET        /api/v1/query/related/<column_name>                                                  
+QueryRestApi.stop_query                          POST       /api/v1/query/stop                                                                   
+RLSRestApi.bulk_delete                           DELETE     /api/v1/rowlevelsecurity/                                                            
+RLSRestApi.delete                                DELETE     /api/v1/rowlevelsecurity/<pk>                                                        
+RLSRestApi.get                                   GET        /api/v1/rowlevelsecurity/<int:pk>                                                    
+RLSRestApi.get_list                              GET        /api/v1/rowlevelsecurity/                                                            
+RLSRestApi.info                                  GET        /api/v1/rowlevelsecurity/_info                                                       
+RLSRestApi.post                                  POST       /api/v1/rowlevelsecurity/                                                            
+RLSRestApi.put                                   PUT        /api/v1/rowlevelsecurity/<int:pk>                                                    
+RLSRestApi.related                               GET        /api/v1/rowlevelsecurity/related/<column_name>                                       
+ReportExecutionLogRestApi.get                    GET        /api/v1/report/<int:pk>/log/<int:log_id>                                             
+ReportExecutionLogRestApi.get_list               GET        /api/v1/report/<int:pk>/log/                                                         
+ReportScheduleRestApi.bulk_delete                DELETE     /api/v1/report/                                                                      
+ReportScheduleRestApi.delete                     DELETE     /api/v1/report/<int:pk>                                                              
+ReportScheduleRestApi.get                        GET        /api/v1/report/<int:pk>                                                              
+ReportScheduleRestApi.get_list                   GET        /api/v1/report/                                                                      
+ReportScheduleRestApi.info                       GET        /api/v1/report/_info                                                                 
+ReportScheduleRestApi.post                       POST       /api/v1/report/                                                                      
+ReportScheduleRestApi.put                        PUT        /api/v1/report/<int:pk>                                                              
+ReportScheduleRestApi.related                    GET        /api/v1/report/related/<column_name>                                                 
+ReportView.list                                  GET        /report/list/                                                                        
+ReportView.log                                   GET        /report/<pk>/log/                                                                    
+ResetMyPasswordView.this_form_get                GET        /resetmypassword/form                                                                
+ResetMyPasswordView.this_form_post               POST       /resetmypassword/form                                                                
+ResetPasswordView.this_form_get                  GET        /resetpassword/form                                                                  
+ResetPasswordView.this_form_post                 POST       /resetpassword/form                                                                  
+RoleModelView.action_post                        POST       /roles/action_post                                                                   
+RoleModelView.add                                GET, POST  /roles/add                                                                           
+RoleModelView.delete                             GET, POST  /roles/delete/<pk>                                                                   
+RoleModelView.edit                               GET, POST  /roles/edit/<pk>                                                                     
+RoleModelView.list                               GET        /roles/list/                                                                         
+RoleModelView.show                               GET        /roles/show/<pk>                                                                     
+RowLevelSecurityView.list                        GET        /rowlevelsecurity/list/                                                              
+SavedQueryRestApi.bulk_delete                    DELETE     /api/v1/saved_query/                                                                 
+SavedQueryRestApi.delete                         DELETE     /api/v1/saved_query/<pk>                                                             
+SavedQueryRestApi.distinct                       GET        /api/v1/saved_query/distinct/<column_name>                                           
+SavedQueryRestApi.export                         GET        /api/v1/saved_query/export/                                                          
+SavedQueryRestApi.get                            GET        /api/v1/saved_query/<int:pk>                                                         
+SavedQueryRestApi.get_list                       GET        /api/v1/saved_query/                                                                 
+SavedQueryRestApi.import_                        POST       /api/v1/saved_query/import/                                                          
+SavedQueryRestApi.info                           GET        /api/v1/saved_query/_info                                                            
+SavedQueryRestApi.post                           POST       /api/v1/saved_query/                                                                 
+SavedQueryRestApi.put                            PUT        /api/v1/saved_query/<pk>                                                             
+SavedQueryRestApi.related                        GET        /api/v1/saved_query/related/<column_name>                                            
+SavedQueryView.add                               GET, POST  /savedqueryview/add                                                                  
+SavedQueryView.api_create                        POST       /savedqueryview/api/create                                                           
+SavedQueryView.api_delete                        DELETE     /savedqueryview/api/delete/<pk>                                                      
+SavedQueryView.api_get                           GET        /savedqueryview/api/get/<pk>                                                         
+SavedQueryView.api_read                          GET        /savedqueryview/api/read                                                             
+SavedQueryView.api_update                        PUT        /savedqueryview/api/update/<pk>                                                      
+SavedQueryView.delete                            GET, POST  /savedqueryview/delete/<pk>                                                          
+SavedQueryView.edit                              GET, POST  /savedqueryview/edit/<pk>                                                            
+SavedQueryView.list                              GET        /savedqueryview/list/                                                                
+SavedQueryView.show                              GET        /savedqueryview/show/<pk>                                                            
+SavedQueryViewApi.api_create                     POST       /savedqueryviewapi/api/create                                                        
+SavedQueryViewApi.api_get                        GET        /savedqueryviewapi/api/get/<pk>                                                      
+SavedQueryViewApi.api_read                       GET        /savedqueryviewapi/api/read                                                          
+SavedQueryViewApi.api_update                     PUT        /savedqueryviewapi/api/update/<pk>                                                   
+SecurityApi.login                                POST       /api/v1/security/login                                                               
+SecurityApi.refresh                              POST       /api/v1/security/refresh                                                             
+SecurityRestApi.csrf_token                       GET        /api/v1/security/csrf_token/                                                         
+SecurityRestApi.guest_token                      POST       /api/v1/security/guest_token/                                                        
+SliceAsync.api_read                              GET        /sliceasync/api/read                                                                 
+SliceModelView.action_post                       POST       /chart/action_post                                                                   
+SliceModelView.add                               GET, POST  /chart/add                                                                           
+SliceModelView.api_delete                        DELETE     /chart/api/delete/<pk>                                                               
+SliceModelView.api_read                          GET        /chart/api/read                                                                      
+SliceModelView.delete                            GET, POST  /chart/delete/<pk>                                                                   
+SliceModelView.download                          GET        /chart/download/<string:filename>                                                    
+SliceModelView.edit                              GET, POST  /chart/edit/<pk>                                                                     
+SliceModelView.list                              GET        /chart/list/                                                                         
+SliceModelView.show                              GET        /chart/show/<pk>                                                                     
+SqlLabRestApi.estimate_query_cost                POST       /api/v1/sqllab/estimate/                                                             
+SqlLabRestApi.execute_sql_query                  POST       /api/v1/sqllab/execute/                                                              
+SqlLabRestApi.export_csv                         GET        /api/v1/sqllab/export/<string:client_id>/                                            
+SqlLabRestApi.format_sql                         POST       /api/v1/sqllab/format_sql/                                                           
+SqlLabRestApi.get                                GET        /api/v1/sqllab/                                                                      
+SqlLabRestApi.get_results                        GET        /api/v1/sqllab/results/                                                              
+SqlMetricInlineView.add                          GET, POST  /sqlmetricinlineview/add                                                             
+SqlMetricInlineView.api_create                   POST       /sqlmetricinlineview/api/create                                                      
+SqlMetricInlineView.api_delete                   DELETE     /sqlmetricinlineview/api/delete/<pk>                                                 
+SqlMetricInlineView.api_get                      GET        /sqlmetricinlineview/api/get/<pk>                                                    
+SqlMetricInlineView.api_read                     GET        /sqlmetricinlineview/api/read                                                        
+SqlMetricInlineView.api_update                   PUT        /sqlmetricinlineview/api/update/<pk>                                                 
+SqlMetricInlineView.delete                       GET, POST  /sqlmetricinlineview/delete/<pk>                                                     
+SqlMetricInlineView.edit                         GET, POST  /sqlmetricinlineview/edit/<pk>                                                       
+SqlMetricInlineView.list                         GET, POST  /sqlmetricinlineview/list/                                                           
+SqllabView.history                               GET        /sqllab/history/                                                                     
+SqllabView.root                                  GET, POST  /sqllab/                                                                             
+Superset.dashboard                               GET        /superset/dashboard/<dashboard_id_or_slug>/                                          
+Superset.dashboard_permalink                     GET        /superset/dashboard/p/<key>/                                                         
+Superset.explore                                 GET, POST  /superset/explore/<datasource_type>/<int:datasource_id>/                             
+Superset.explore                                 GET, POST  /superset/explore/                                                                   
+Superset.explore_json                            GET, POST  /superset/explore_json/<datasource_type>/<int:datasource_id>/                        
+Superset.explore_json                            GET, POST  /superset/explore_json/                                                              
+Superset.explore_json_data                       GET        /superset/explore_json/data/<cache_key>                                              
+Superset.fetch_datasource_metadata               GET        /superset/fetch_datasource_metadata                                                  
+Superset.log                                     POST       /superset/log/                                                                       
+Superset.slice                                   GET        /superset/slice/<int:slice_id>/                                                      
+Superset.sqllab_history                          GET        /superset/sqllab/history/                                                            
+Superset.theme                                   GET        /superset/theme/                                                                     
+Superset.warm_up_cache                           GET        /superset/warm_up_cache/                                                             
+Superset.welcome                                 GET        /superset/welcome/                                                                   
+SupersetIndexView.index                          GET        /                                                                                    
+SwaggerView.show                                 GET        /swagger/<version>                                                                   
+TabStateView.activate                            POST       /tabstateview/<int:tab_state_id>/activate                                            
+TabStateView.delete                              DELETE     /tabstateview/<int:tab_state_id>                                                     
+TabStateView.delete_query                        DELETE     /tabstateview/<int:tab_state_id>/query/<client_id>                                   
+TabStateView.get                                 GET        /tabstateview/<int:tab_state_id>                                                     
+TabStateView.migrate_query                       POST       /tabstateview/<int:tab_state_id>/migrate_query                                       
+TabStateView.post                                POST       /tabstateview/                                                                       
+TabStateView.put                                 PUT        /tabstateview/<int:tab_state_id>                                                     
+TableColumnInlineView.add                        GET, POST  /tablecolumninlineview/add                                                           
+TableColumnInlineView.api_create                 POST       /tablecolumninlineview/api/create                                                    
+TableColumnInlineView.api_delete                 DELETE     /tablecolumninlineview/api/delete/<pk>                                               
+TableColumnInlineView.api_get                    GET        /tablecolumninlineview/api/get/<pk>                                                  
+TableColumnInlineView.api_read                   GET        /tablecolumninlineview/api/read                                                      
+TableColumnInlineView.api_update                 PUT        /tablecolumninlineview/api/update/<pk>                                               
+TableColumnInlineView.delete                     GET, POST  /tablecolumninlineview/delete/<pk>                                                   
+TableColumnInlineView.edit                       GET, POST  /tablecolumninlineview/edit/<pk>                                                     
+TableColumnInlineView.list                       GET, POST  /tablecolumninlineview/list/                                                         
+TableModelView.action_post                       POST       /tablemodelview/action_post                                                          
+TableModelView.add                               GET, POST  /tablemodelview/add                                                                  
+TableModelView.delete                            GET, POST  /tablemodelview/delete/<pk>                                                          
+TableModelView.edit                              GET, POST  /tablemodelview/edit/<pk>                                                            
+TableModelView.list                              GET        /tablemodelview/list/                                                                
+TableModelView.show                              GET        /tablemodelview/show/<pk>                                                            
+TableSchemaView.delete                           DELETE     /tableschemaview/<int:table_schema_id>                                               
+TableSchemaView.expanded                         POST       /tableschemaview/<int:table_schema_id>/expanded                                      
+TableSchemaView.post                             POST       /tableschemaview/                                                                    
+TagModelView.list                                GET        /superset/tags/                                                                      
+TagRestApi.add_favorite                          POST       /api/v1/tag/<pk>/favorites/                                                          
+TagRestApi.add_objects                           POST       /api/v1/tag/<int:object_type>/<int:object_id>/                                       
+TagRestApi.bulk_create                           POST       /api/v1/tag/bulk_create                                                              
+TagRestApi.bulk_delete                           DELETE     /api/v1/tag/                                                                         
+TagRestApi.delete                                DELETE     /api/v1/tag/<pk>                                                                     
+TagRestApi.delete_object                         DELETE     /api/v1/tag/<int:object_type>/<int:object_id>/<tag>/                                 
+TagRestApi.favorite_status                       GET        /api/v1/tag/favorite_status/                                                         
+TagRestApi.get                                   GET        /api/v1/tag/<int:pk>                                                                 
+TagRestApi.get_list                              GET        /api/v1/tag/                                                                         
+TagRestApi.get_objects                           GET        /api/v1/tag/get_objects/                                                             
+TagRestApi.info                                  GET        /api/v1/tag/_info                                                                    
+TagRestApi.post                                  POST       /api/v1/tag/                                                                         
+TagRestApi.put                                   PUT        /api/v1/tag/<pk>                                                                     
+TagRestApi.related                               GET        /api/v1/tag/related/<column_name>                                                    
+TagRestApi.remove_favorite                       DELETE     /api/v1/tag/<pk>/favorites/                                                          
+TagView.tags                                     GET        /tagview/tags/                                                                       
+TaggedObjectsModelView.list                      GET        /superset/all_entities/                                                              
+UserDBModelView.action                           GET, POST  /users/action/<string:name>/<pk>                                                     
+UserDBModelView.action_post                      POST       /users/action_post                                                                   
+UserDBModelView.add                              GET, POST  /users/add                                                                           
+UserDBModelView.api_read                         GET        /users/api/read                                                                      
+UserDBModelView.delete                           GET, POST  /users/delete/<pk>                                                                   
+UserDBModelView.edit                             GET, POST  /users/edit/<pk>                                                                     
+UserDBModelView.list                             GET        /users/list/                                                                         
+UserDBModelView.show                             GET        /users/show/<pk>                                                                     
+UserDBModelView.userinfo                         GET        /users/userinfo/                                                                     
+UserInfoEditView.this_form_get                   GET        /userinfoeditview/form                                                               
+UserInfoEditView.this_form_post                  POST       /userinfoeditview/form                                                               
+UserRestApi.avatar                               GET        /api/v1/user/<int:user_id>/avatar.png                                                
+UtilView.back                                    GET        /back                                                                                
+appbuilder.static                                GET        /static/appbuilder/<path:filename>                                                   
+health                                           GET        /ping                                                                                
+health                                           GET        /healthcheck                                                                         
+health                                           GET        /health                                                                              
+static                                           GET        /static/<path:filename>                                                              

@@ -1481,6 +1481,9 @@ TALISMAN_CONFIG = {
             "https://events.mapbox.com",
             "http://localhost:8000",
             "http://localhost:4000",
+            "https://pofc.posicion.mx",
+            "http://www.posicion.mx:8088",
+            "https://www.posicion.mx:4000",
         ],
         "object-src": "'none'",
         "style-src": [
@@ -1513,6 +1516,9 @@ TALISMAN_DEV_CONFIG = {
             "https://events.mapbox.com",
             "http://localhost:8000",
             "http://localhost:4000",
+            "https://pofc.posicion.mx",
+            "http://www.posicion.mx:8088",
+            "https://www.posicion.mx:4000",
         ],
         "object-src": "'none'",
         "style-src": [

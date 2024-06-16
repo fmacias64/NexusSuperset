@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -118,7 +119,7 @@ class ChartRenderer extends React.Component {
       onFilterMenuClose: this.props.onFilterMenuClose,
       onLegendStateChanged: this.handleLegendStateChanged,
       setDataMask: dataMask => {
-        console.log("chartrenderer udate datamask");
+        console.log('chartrenderer udate datamask');
         this.props.actions?.updateDataMask(this.props.chartId, dataMask);
       },
     };
