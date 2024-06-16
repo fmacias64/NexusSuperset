@@ -50,6 +50,7 @@ const {
   nameChunks = false,
 } = parsedArgs;
 const isDevMode = mode !== 'production';
+console.log(isDevMode);
 const isDevServer = process.argv[1].includes('webpack-dev-server');
 const ASSET_BASE_URL = process.env.ASSET_BASE_URL || '';
 
@@ -210,7 +211,7 @@ const config = {
     menu: addPreamble('src/views/menu.tsx'),
     spa: addPreamble('/src/views/index.tsx'),
     embedded: addPreamble('/src/embedded/index.tsx'),
-    devtool: isDevMode ? 'eval-cheap-module-source-map' : 'source-map',
+    //devtool: isDevMode ? 'eval-cheap-module-source-map' : 'source-map',
   },
   cache: {
     type: 'filesystem', // Enable filesystem caching

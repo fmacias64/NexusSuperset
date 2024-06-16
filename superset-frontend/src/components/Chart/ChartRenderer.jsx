@@ -96,6 +96,7 @@ class ChartRenderer extends React.Component {
 
     this.contextMenuRef = React.createRef();
 
+    this.dataComponent = 'ChartRenderer';
     this.handleAddFilter = this.handleAddFilter.bind(this);
     this.handleRenderSuccess = this.handleRenderSuccess.bind(this);
     this.handleRenderFailure = this.handleRenderFailure.bind(this);
@@ -117,6 +118,7 @@ class ChartRenderer extends React.Component {
       onFilterMenuClose: this.props.onFilterMenuClose,
       onLegendStateChanged: this.handleLegendStateChanged,
       setDataMask: dataMask => {
+        console.log("chartrenderer udate datamask");
         this.props.actions?.updateDataMask(this.props.chartId, dataMask);
       },
     };

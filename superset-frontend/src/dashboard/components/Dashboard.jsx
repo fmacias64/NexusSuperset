@@ -96,6 +96,10 @@ const defaultProps = {
   userId: '',
 };
 
+// Función para determinar si estamos en producción
+function isProduction() {
+  return window.location.href.includes("posicion");
+}
 
 //   #######                                                                        
 //   #     # #####  ##### ###### #    # ###### #####                                
@@ -158,11 +162,24 @@ const getDashboardIdFromUrl = () => {
 
 ////////////////////////////////////////////////////////////////////
 function findReactComponent(dom) {
+  if (isProduction()) {
+    for (const key in dom) {
+      if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
+        let fiberNode = dom[key];
+        while (fiberNode.return) {
+          fiberNode = fiberNode.return;
+        }
+        return fiberNode.stateNode;
+      }
+    }
+  }
+  else {
   for (const key in dom) {
     if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
       return dom[key];
     }
   }
+}
   return null;
 }
 
@@ -193,6 +210,88 @@ function findAnyReactComponent() {
   }
   return null;
 }
+
+// Función para encontrar la raíz del árbol de React aplica para produccion
+function findReactRoot(reactComponent) {
+  if (!reactComponent) return null;
+
+  let currentComponent = reactComponent;
+  while (currentComponent) {
+    if (currentComponent.return) {
+      currentComponent = currentComponent.return.stateNode;
+    } else {
+      return currentComponent;
+    }
+  }
+
+  return null;
+}
+
+
+// seguimos en ambiente de produccion
+// Función para registrar los componentes React que cumplen con los criterios especificados
+function traverseAndLogComponents(rootComponent, sliceId, dashboardId) {
+  if (!rootComponent) {
+    return;
+  }
+
+  let componentCounter = 0;
+
+  function traverseReactTreeP(reactComponent) {
+    if (!reactComponent) return;
+
+    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+    const props = reactComponent.memoizedProps || {};
+    const state = reactComponent.memoizedState || {};
+
+    if (
+      props.chart?.id === sliceId &&
+      props.componentId?.startsWith('CHART') &&
+      props.dashboardId === dashboardId
+    ) {
+      componentCounter += 1;
+      console.log(`Componente ${componentCounter} - Nombre del componente: ${componentName}`);
+      console.log(`Detalles del componente ${componentName}:`, {
+        funciones: Object.getOwnPropertyNames(Object.getPrototypeOf(reactComponent)),
+        props: props,
+        state: state,
+        root: {
+          ...reactComponent,
+          props: undefined,
+          state: undefined,
+        },
+      });
+
+      if (!componentName.startsWith('withRouter')) {
+        if (typeof reactComponent.forceRefresh === 'function') {
+          console.log(`Llamando a forceRefresh en el componente ${componentName}`);
+          reactComponent.forceRefresh();
+        } else if (typeof props.refreshChart === 'function') {
+          console.log(`Llamando a refreshChart en el componente ${componentName}`);
+          props.refreshChart(
+            props.chart.id,
+            true,
+            props.dashboardId
+          );
+        }
+      }
+    }
+
+    // Recorrer nodos hijos recursivamente
+    if (reactComponent.child) {
+      traverseReactTreeP(reactComponent.child);
+    }
+
+    // Recorrer nodos hermanos
+    if (reactComponent.sibling) {
+      traverseReactTreeP(reactComponent.sibling);
+    }
+  }
+
+  traverseReactTreeP(rootComponent.current);
+}
+
+
 
 // Function to traverse the React tree and find the App component
 function findAppComponent(reactComponent) {
@@ -403,6 +502,28 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
   console.log('Root component:', rootComponent);
 
   if (type === 'refreshChartBySocket') {
+    if (isProduction()) {
+      const reactComponent = findAnyReactComponent();
+      if (reactComponent) {
+        console.log('Componente React encontrado:', reactComponent);
+        const rootComponent = findReactRoot(reactComponent);
+      
+        if (rootComponent) {
+          console.log('Raíz del árbol de React encontrada:', rootComponent);
+      
+          // Definir los parámetros para buscar los componentes objetivo
+          const sliceId = slice_id; // Usamos slice_id pasado en el mensaje
+          const dashboardId = dashboard_id; // Usamos dashboard_id pasado en el mensaje
+      
+          // Buscar y registrar detalles de los componentes que cumplen con los criterios
+          traverseAndLogComponents(rootComponent, sliceId, dashboardId);
+        } else {
+          console.log('No se pudo encontrar la raíz del árbol de React.');
+        }
+      } else {
+        console.log('No se encontró ningún componente React.');
+      }
+    } else {
     const sliceHeaderComponent = searchComponent(rootComponent, 'SliceHeader', slice_id, dashboard_id,type); // Cambiado aquí
     if (sliceHeaderComponent) {
       console.log('Working with SliceHeader component:');
@@ -418,6 +539,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
         console.log('forceRefresh function not found in props.');
       }
     }
+  }
   } 
   else if (type === 'applyCrossFilterBySocket') {
     const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id,type); // Cambiado aquí

@@ -47,7 +47,6 @@ const StyledCrossFiltersTitle = styled.span`
     font-size: ${theme.typography.sizes.s}px;
   `}
 `;
-
 const CrossFiltersVerticalCollapse = (props: {
   crossFilters: CrossFilterIndicator[];
 }) => {
