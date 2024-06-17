@@ -563,7 +563,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
 
     // Definir los parámetros para buscar el componente objetivo    
     // Registrar los componentes React que cumplen con los criterios
-    traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super);
+    traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super);
   } else {
     console.log('No se pudo encontrar la raíz del árbol de React.');
   }
