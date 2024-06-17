@@ -230,7 +230,7 @@ function findReactRoot(reactComponent) {
 
 // seguimos en ambiente de produccion
 // Función para registrar los componentes React que cumplen con los criterios especificados
-function traverseAndLogComponents(rootComponent, sliceId, dashboardId) {
+function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '') {
   if (!rootComponent) {
     return;
   }
@@ -243,8 +243,16 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId) {
     const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
     const props = reactComponent.memoizedProps || {};
     const state = reactComponent.memoizedState || {};
-
-    if (
+    const stateNode = reactComponent.stateNode;
+    
+    if (stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
+      console.log(`Nombre del componente: ${componentName}`);
+      console.log(`Detalles del componente que cumple con los criterios:`, stateNode);
+      console.log(`Propiedades del componente:`, props);
+      applyCrossFilterAndUpdate(reactComponent, filter_super);
+    }
+    else if (type === 'refreshChart') {
+      if (
       props.chart?.id === sliceId &&
       props.componentId?.startsWith('CHART') &&
       props.dashboardId === dashboardId
@@ -276,6 +284,7 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId) {
         }
       }
     }
+  }
 
     // Recorrer nodos hijos recursivamente
     if (reactComponent.child) {
@@ -542,6 +551,27 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
   }
   } 
   else if (type === 'applyCrossFilterBySocket') {
+    if (isProduction()) {
+      // Encontrar el componente React y la raíz
+      const reactComponent = findAnyReactComponent();
+      if (reactComponent) {
+        console.log('Componente React encontrado:', reactComponent);
+        const rootComponent = findReactRoot(reactComponent);
+
+      if (rootComponent) {
+          console.log('Raíz del árbol de React encontrada:', rootComponent);
+
+    // Definir los parámetros para buscar el componente objetivo    
+    // Registrar los componentes React que cumplen con los criterios
+    traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super);
+  } else {
+    console.log('No se pudo encontrar la raíz del árbol de React.');
+  }
+} else {
+  console.log('No se encontró ningún componente React.');
+}
+    }
+    else {
     const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id,type); // Cambiado aquí
     if (chartRenderComponent) {
       console.log('Working with ChartRender component:');
@@ -552,7 +582,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
     } else {
       console.log('ChartRender component not found.');
     }
-  }
+  }}
   else if (type === 'removeCrossFilterBySocket') {
     const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id, type); // Cambiado aquí
     if (chartRenderComponent) {
