@@ -255,7 +255,7 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
       removeCrossFilterAndUpdate(reactComponent);
     }
     }
-    else if (type === 'refreshChart') {
+    else if (type === 'refreshChartBySocket') {
       if (
       props.chart?.id === sliceId &&
       props.componentId?.startsWith('CHART') &&
@@ -499,7 +499,11 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
     return;
   }
 
+  if (isProduction()) { console.log("nada");}
+else {
   let appComponent = findAppComponent(reactComponent);
+}
+
   if (!appComponent) {
     console.log('App component not found, navigating to root.');
     rootComponent = navigateToRoot(reactComponent);
