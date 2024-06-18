@@ -245,11 +245,15 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
     const state = reactComponent.memoizedState || {};
     const stateNode = reactComponent.stateNode;
     
-    if (stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
+    if ((type === 'applyCrossFilterBySocket' || type === 'removeCrossFilterBySocket' ) && stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
       console.log(`Nombre del componente: ${componentName}`);
       console.log(`Detalles del componente que cumple con los criterios:`, stateNode);
       console.log(`Propiedades del componente:`, props);
+    if (type === 'applyCrossFilterBySocket') {
       applyCrossFilterAndUpdate(reactComponent, filter_super);
+    } else if (type === 'removeCrossFilterBySocket') {
+      removeCrossFilterAndUpdate(reactComponent);
+    }
     }
     else if (type === 'refreshChart') {
       if (
