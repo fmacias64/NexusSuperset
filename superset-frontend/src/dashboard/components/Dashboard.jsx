@@ -499,10 +499,8 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
     return;
   }
 
-  if (isProduction()) { console.log("nada");}
-else {
   let appComponent = findAppComponent(reactComponent);
-}
+
 
   if (!appComponent) {
     console.log('App component not found, navigating to root.');
