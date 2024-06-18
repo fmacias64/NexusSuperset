@@ -588,6 +588,27 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
     }
   }}
   else if (type === 'removeCrossFilterBySocket') {
+    if (isProduction()) {
+      const reactComponent = findAnyReactComponent();
+      if (reactComponent) {
+        console.log('Componente React encontrado:', reactComponent);
+        const rootComponent = findReactRoot(reactComponent);
+      
+        if (rootComponent) {
+          console.log('Raíz del árbol de React encontrada:', rootComponent);
+      
+          // Definir los parámetros para buscar el componente objetivo
+          const type = 'removeCrossFilterBySocket'; // 'refreshChart', 'applyCrossFilterBySocket' o 'removeCrossFilterBySocket'
+          
+          // Registrar los componentes React que cumplen con los criterios
+          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super);
+        } else {
+          console.log('No se pudo encontrar la raíz del árbol de React.');
+        }
+      } else {
+          console.log('No se encontró ningún componente React.');
+      }}
+    else {
     const chartRenderComponent = searchComponent(rootComponent, 'ChartRenderer', slice_id, dashboard_id, type); // Cambiado aquí
     if (chartRenderComponent) {
       console.log('Working with ChartRender component:');
@@ -598,6 +619,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
       console.log('ChartRender component not found.');
     }
   }
+}
   else if (type === 'getCrossFilters') {
   const crossFiltersVerticalCollapse = searchComponent(rootComponent, 'CrossFiltersVerticalCollapse', slice_id, dashboard_id, type);
   if (crossFiltersVerticalCollapse) {
