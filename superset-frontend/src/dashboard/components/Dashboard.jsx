@@ -232,76 +232,88 @@ function findReactRoot(reactComponent) {
 // Función para registrar los componentes React que cumplen con los criterios especificados
 function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '') {
   if (!rootComponent) {
-    return;
+    return null;
   }
 
   let componentCounter = 0;
 
   function traverseReactTreeP(reactComponent) {
-    if (!reactComponent) return;
+    if (!reactComponent) return null;
 
     const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
     const props = reactComponent.memoizedProps || {};
     const state = reactComponent.memoizedState || {};
     const stateNode = reactComponent.stateNode;
-    
-    if ((type === 'applyCrossFilterBySocket' || type === 'removeCrossFilterBySocket' ) && stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
+
+    if ((type === 'applyCrossFilterBySocket' || type === 'removeCrossFilterBySocket') && stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
       console.log(`Nombre del componente: ${componentName}`);
       console.log(`Detalles del componente que cumple con los criterios:`, stateNode);
       console.log(`Propiedades del componente:`, props);
-    if (type === 'applyCrossFilterBySocket') {
-      applyCrossFilterAndUpdate(reactComponent, filter_super);
-    } else if (type === 'removeCrossFilterBySocket') {
-      removeCrossFilterAndUpdate(reactComponent);
-    }
-    }
-    else if (type === 'refreshChartBySocket') {
+      if (type === 'applyCrossFilterBySocket') {
+        applyCrossFilterAndUpdate(reactComponent, filter_super);
+      } else if (type === 'removeCrossFilterBySocket') {
+        removeCrossFilterAndUpdate(reactComponent);
+      }
+    } else if (type === 'refreshChartBySocket') {
       if (
-      props.chart?.id === sliceId &&
-      props.componentId?.startsWith('CHART') &&
-      props.dashboardId === dashboardId
-    ) {
-      componentCounter += 1;
-      console.log(`Componente ${componentCounter} - Nombre del componente: ${componentName}`);
-      console.log(`Detalles del componente ${componentName}:`, {
-        funciones: Object.getOwnPropertyNames(Object.getPrototypeOf(reactComponent)),
-        props: props,
-        state: state,
-        root: {
-          ...reactComponent,
-          props: undefined,
-          state: undefined,
-        },
-      });
+        props.chart?.id === sliceId &&
+        props.componentId?.startsWith('CHART') &&
+        props.dashboardId === dashboardId
+      ) {
+        componentCounter += 1;
+        console.log(`Componente ${componentCounter} - Nombre del componente: ${componentName}`);
+        console.log(`Detalles del componente ${componentName}:`, {
+          funciones: Object.getOwnPropertyNames(Object.getPrototypeOf(reactComponent)),
+          props: props,
+          state: state,
+          root: {
+            ...reactComponent,
+            props: undefined,
+            state: undefined,
+          },
+        });
 
-      if (!componentName.startsWith('withRouter')) {
-        if (typeof reactComponent.forceRefresh === 'function') {
-          console.log(`Llamando a forceRefresh en el componente ${componentName}`);
-          reactComponent.forceRefresh();
-        } else if (typeof props.refreshChart === 'function') {
-          console.log(`Llamando a refreshChart en el componente ${componentName}`);
-          props.refreshChart(
-            props.chart.id,
-            true,
-            props.dashboardId
-          );
+        if (!componentName.startsWith('withRouter')) {
+          if (typeof reactComponent.forceRefresh === 'function') {
+            console.log(`Llamando a forceRefresh en el componente ${componentName}`);
+            reactComponent.forceRefresh();
+          } else if (typeof props.refreshChart === 'function') {
+            console.log(`Llamando a refreshChart en el componente ${componentName}`);
+            props.refreshChart(
+              props.chart.id,
+              true,
+              props.dashboardId
+            );
+          }
         }
       }
+    } else if (type === 'getCrossFilters') {
+      if (componentName === 'CrossFiltersVerticalCollapse') {
+        console.log('Working with CrossFiltersVerticalCollapse component:');
+        console.log('Props:', props);
+
+        const crossFilterDetails = extractCrossFilterDetails(props.crossFilters);
+        console.log('Cross-filter details:', crossFilterDetails);
+        return crossFilterDetails; // Devolver los detalles del cross filter
+      }
     }
-  }
 
     // Recorrer nodos hijos recursivamente
     if (reactComponent.child) {
-      traverseReactTreeP(reactComponent.child);
+      const result = traverseReactTreeP(reactComponent.child);
+      if (result) return result; // Detener la búsqueda si se encuentra un resultado
     }
 
     // Recorrer nodos hermanos
     if (reactComponent.sibling) {
-      traverseReactTreeP(reactComponent.sibling);
+      const result = traverseReactTreeP(reactComponent.sibling);
+      if (result) return result; // Detener la búsqueda si se encuentra un resultado
     }
+
+    return null;
   }
 
-  traverseReactTreeP(rootComponent.current);
+  return traverseReactTreeP(rootComponent.current);
 }
 
 
@@ -454,6 +466,7 @@ console.log(dataMask);
       actions.updateDataMask(component.memoizedProps.chartId, dataMask.dataMask);
 
       // Fuerza la actualización del gráfico
+      console.log(component);
       component.forceUpdate();
     } else {
       console.error('Component memoizedProps or actions not found or updateDataMask is missing:', component);
@@ -623,20 +636,41 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
   }
 }
   else if (type === 'getCrossFilters') {
-  const crossFiltersVerticalCollapse = searchComponent(rootComponent, 'CrossFiltersVerticalCollapse', slice_id, dashboard_id, type);
+  if (isProduction()) {
+    const reactComponent = findAnyReactComponent();
+if (reactComponent) {
+  console.log('Componente React encontrado:', reactComponent);
+  const rootComponent = findReactRoot(reactComponent);
+
+  if (rootComponent) {
+    console.log('Raíz del árbol de React encontrada:', rootComponent);
+
+    
+    // Registrar los componentes React que cumplen con los criterios
+    const crossFilterDetails=traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type);
+    console.log('Cross-filter details:',crossFilterDetails);
+  } else {
+    console.log('No se pudo encontrar la raíz del árbol de React.');
+  }
+} else {
+  console.log('No se encontró ningún componente React.');
+}
+  }
+  else
+  { const crossFiltersVerticalCollapse = searchComponent(rootComponent, 'CrossFiltersVerticalCollapse', slice_id, dashboard_id, type);
   if (crossFiltersVerticalCollapse) {
     console.log('Working with CrossFiltersVerticalCollapse component:');
     console.log('Props:', crossFiltersVerticalCollapse.memoizedProps);
 
     const crossFilterDetails = extractCrossFilterDetails(crossFiltersVerticalCollapse.memoizedProps.crossFilters);
     console.log('Cross-filter details:', crossFilterDetails);
-  } else {
+  }else {
     console.log('CrossFiltersVerticalCollapse component not found.');
   }
 }
   console.log('Script execution completed.');
 };
-
+};
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
 
