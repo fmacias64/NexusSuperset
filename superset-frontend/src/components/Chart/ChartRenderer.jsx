@@ -119,7 +119,7 @@ class ChartRenderer extends React.Component {
       onFilterMenuClose: this.props.onFilterMenuClose,
       onLegendStateChanged: this.handleLegendStateChanged,
       setDataMask: dataMask => {
-        console.log('chartrenderer udate datamask');
+        console.log('chartrenderer udate datamask',this);
         this.props.actions?.updateDataMask(this.props.chartId, dataMask);
       },
     };
