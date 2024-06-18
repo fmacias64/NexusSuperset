@@ -288,7 +288,7 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
         }
       }
     } else if (type === 'getCrossFilters') {
-      if (componentName === 'CrossFiltersVerticalCollapse') {
+      if (props.crossFilters ) {
         console.log('Working with CrossFiltersVerticalCollapse component:');
         console.log('Props:', props);
 
