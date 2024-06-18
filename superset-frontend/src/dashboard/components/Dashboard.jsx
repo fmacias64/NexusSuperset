@@ -450,7 +450,7 @@ const generateCrossFilterDataMask = (selectedValues, groupby, labelMap) => value
 
 const applyCrossFilterAndUpdate = (component, filter_super) => {
   const [columnName, value] = filter_super.split('=');
-
+console.log("aplica crossFilter",component);
   // Genera la máscara de datos utilizando generateCrossFilterDataMask
   const dataMask = generateCrossFilterDataMask(
     {}, // selectedValues, asumiendo que es un objeto vacío para empezar
@@ -466,7 +466,7 @@ console.log(dataMask);
       actions.updateDataMask(component.memoizedProps.chartId, dataMask.dataMask);
 
       // Fuerza la actualización del gráfico
-      console.log(component);
+      console.log("updateDatamask ",component);
       component.forceUpdate();
     } else {
       console.error('Component memoizedProps or actions not found or updateDataMask is missing:', component);
