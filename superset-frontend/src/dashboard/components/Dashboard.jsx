@@ -272,7 +272,7 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
     const stateNode = reactComponent.stateNode;
 
     if (
-      (type === 'applyCrossFilterBySocket' || type === 'activateTab') &&
+      (type === 'applyCrossFilterBySocket' ) &&
       stateNode &&
       stateNode.dataComponent === 'ChartRenderer' &&
       props.chartId === sliceId &&
