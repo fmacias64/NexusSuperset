@@ -328,15 +328,8 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
         console.log('Cross-filter details:', crossFilterDetails);
         return crossFilterDetails; // Devolver los detalles del cross filter
       }
-    } else if ((type==='activateTab') )
-      { if  (props.tab)
-        {
-          console.log(props);
-        }
-        if  (props.tab && props.tab.key === tabKey) 
-        
-        {console.log("algo");
-      }
+    } else if ((type==='activateTab') && props.tab && props.tab.key === tabKey) 
+      {
       console.log(`Nombre del componente: ${componentName}`);
       console.log(`Detalles del componente que cumple con los criterios:`, reactComponent);
       console.log(`Propiedades del componente:`, props);
