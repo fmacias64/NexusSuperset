@@ -664,7 +664,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
           //const tabId = "TAB-nR-9yxMgk"; // Definir el tabId específico
   
           // Registrar los componentes React que cumplen con los criterios
-          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super);
+          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super, filter_super);
         } else {
           console.log('No se pudo encontrar la raíz del árbol de React.');
         }
