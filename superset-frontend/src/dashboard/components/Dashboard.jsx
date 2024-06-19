@@ -356,7 +356,7 @@ function findAppComponent(reactComponent) {
 }
 
 
-function searchComponent(rootComponent, targetName, sliceId, dashboardId,type) {
+function searchComponent(rootComponent, targetName, sliceId, dashboardId, type, tabKey = 'none') {
   if (!rootComponent) {
     
     return null;
@@ -369,8 +369,13 @@ function searchComponent(rootComponent, targetName, sliceId, dashboardId,type) {
 
     const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
     const props = reactComponent.memoizedProps || {};
-
     
+
+    if (targetName ==='TabNode' && props.tab && props.tab.key === tabKey){
+      console.log("llegue");
+      return reactComponent;
+    }
+
 
     if (componentName === targetName) {
       if (type === 'refreshChartBySocket' && props.slice?.slice_id === sliceId) {
@@ -615,7 +620,7 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
   }}
 
   else if (type === 'activateTab') {
-    if (isProduction() || true ) {
+    if (isProduction() ) {
       const reactComponent = findAnyReactComponent();
       if (reactComponent) {
         console.log('Componente React encontrado:', reactComponent);
@@ -629,14 +634,24 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
           //const tabId = "TAB-nR-9yxMgk"; // Definir el tabId específico
   
           // Registrar los componentes React que cumplen con los criterios
-          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super, filter_super);
+          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super);
         } else {
           console.log('No se pudo encontrar la raíz del árbol de React.');
         }
       } else {
         console.log('No se encontró ningún componente React.');
       }
-    }
+    } else { 
+    console.log("filtaer super",filter_super);
+    const tabNodeComponent = searchComponent(rootComponent, 'TabNode', slice_id, dashboard_id, type, filter_super); // Cambiado aquí
+    if (tabNodeComponent) {
+      console.log('Working with tabNode component:');
+      //console.log('Props:', tabNodeComponent);
+      //console.log('State:', chartRenderComponent.memoizedState);
+      tabNodeComponent.memoizedProps.onClick();
+    } else {
+      console.log('tabNode component not found.');
+    }}
   }
   else if (type === 'removeCrossFilterBySocket') {
     if (isProduction()) {
