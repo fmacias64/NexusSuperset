@@ -230,7 +230,7 @@ function findReactRoot(reactComponent) {
 
 // seguimos en ambiente de produccion
 // Función para registrar los componentes React que cumplen con los criterios especificados
-function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '') {
+function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '', tabKey = '') {
   if (!rootComponent) {
     return null;
   }
@@ -245,8 +245,13 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
     const state = reactComponent.memoizedState || {};
     const stateNode = reactComponent.stateNode;
 
-    if ((type === 'applyCrossFilterBySocket' || type === 'removeCrossFilterBySocket') && stateNode && stateNode.dataComponent === 'ChartRenderer' && (props.chartId === sliceId && props.dashboardId === dashboardId)) {
-      console.log(`Nombre del componente: ${componentName}`);
+    if (
+      (type === 'applyCrossFilterBySocket' || type === 'activateTab') &&
+      stateNode &&
+      stateNode.dataComponent === 'ChartRenderer' &&
+      props.chartId === sliceId &&
+      props.dashboardId === dashboardId
+    ) {  console.log(`Nombre del componente: ${componentName}`);
       console.log(`Detalles del componente que cumple con los criterios:`, stateNode);
       console.log(`Propiedades del componente:`, props);
       if (type === 'applyCrossFilterBySocket') {
@@ -296,6 +301,14 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
         console.log('Cross-filter details:', crossFilterDetails);
         return crossFilterDetails; // Devolver los detalles del cross filter
       }
+    } else if ((type==='activateTab') && (props.tab && props.tab.key === tabKey)) {
+      console.log(`Nombre del componente: ${componentName}`);
+      console.log(`Detalles del componente que cumple con los criterios:`, reactComponent);
+      console.log(`Propiedades del componente:`, props);
+      if (typeof props.onClick === 'function') {
+        props.onClick();
+      }
+      return; // Dejar de recorrer una vez que se encuentra el primer componente que cumple los criterios
     }
 
     // Recorrer nodos hijos recursivamente
@@ -315,8 +328,6 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
 
   return traverseReactTreeP(rootComponent.current);
 }
-
-
 
 // Function to traverse the React tree and find the App component
 function findAppComponent(reactComponent) {
@@ -602,6 +613,31 @@ window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = nul
       console.log('ChartRender component not found.');
     }
   }}
+
+  else if (type === 'activateTab') {
+    if (isProduction() || true ) {
+      const reactComponent = findAnyReactComponent();
+      if (reactComponent) {
+        console.log('Componente React encontrado:', reactComponent);
+        const rootComponent = findReactRoot(reactComponent);
+      
+        if (rootComponent) {
+          console.log('Raíz del árbol de React encontrada:', rootComponent);
+      
+          // Definir los parámetros para buscar el componente objetivo
+          //const type = 'activateTab'; // Definir el tipo específico para activar el tab
+          //const tabId = "TAB-nR-9yxMgk"; // Definir el tabId específico
+  
+          // Registrar los componentes React que cumplen con los criterios
+          traverseAndLogComponents(rootComponent, slice_id, dashboard_id, type, filter_super, filter_super);
+        } else {
+          console.log('No se pudo encontrar la raíz del árbol de React.');
+        }
+      } else {
+        console.log('No se encontró ningún componente React.');
+      }
+    }
+  }
   else if (type === 'removeCrossFilterBySocket') {
     if (isProduction()) {
       const reactComponent = findAnyReactComponent();
