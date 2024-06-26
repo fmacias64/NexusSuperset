@@ -98,7 +98,7 @@ const defaultProps = {
 
 
 function highlightChartById(chartId) {
-  // Crear la clase CSS dinamicamente
+  // Crear la clase CSS dinámicamente
   const style = document.createElement('style');
   style.type = 'text/css';
   style.innerHTML = `
@@ -109,18 +109,24 @@ function highlightChartById(chartId) {
   `;
   document.head.appendChild(style);
 
-  // Seleccionar el chart y aplicar la clase highlight
-  const chart = document.querySelector(`.dashboard-chart-id-${chartId}`);
-  if (chart) {
-    chart.classList.add('highlight');
+  // Seleccionar el div específico con los atributos data-test y dashboard-chart-id
+  const chartElement = document.querySelector(`div[data-test="dashboard-component-chart-holder"].dashboard-chart-id-${chartId}`);
+
+  // Si el div existe, desplazarse hacia él y luego aplicar el resalte
+  if (chartElement) {
+    chartElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Aplicar la clase highlight al chart después de hacer scroll
+    chartElement.classList.add('highlight');
     setTimeout(() => {
-      chart.classList.remove('highlight');
+      chartElement.classList.remove('highlight');
       // Eliminar el estilo agregado para limpiar
       document.head.removeChild(style);
     }, 2000); // Elimina el resalte después de 2 segundos
+  } else {
+    console.error('Chart element not found');
   }
 }
-
 
 // Función para determinar si estamos en producción
 function isProduction() {
