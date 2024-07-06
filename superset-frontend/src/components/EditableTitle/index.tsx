@@ -177,7 +177,7 @@ export default function EditableTitle({
       const getSliceIdFromUrl = (url) => {
     try {
       if (!url) {
-        console.error('URL is empty or undefined');
+        //console.error('URL is empty or undefined');
         return null;
       }
 
@@ -185,13 +185,13 @@ export default function EditableTitle({
       const sliceId = urlParams.get('slice_id');
 
       if (!sliceId) {
-        console.error('slice_id not found in URL:', url);
+        //console.error('slice_id not found in URL:', url);
         return null;
       }
 
       return sliceId;
     } catch (error) {
-      console.error('Error extracting slice_id from URL:', error, 'URL:', url,'id',id);
+      //console.error('Error extracting slice_id from URL:', error, 'URL:', url,'id',id);
       return null;
     }
   };

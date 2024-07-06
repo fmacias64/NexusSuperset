@@ -516,8 +516,9 @@ console.log(dataMask);
       actions.updateDataMask(component.memoizedProps.chartId, dataMask.dataMask);
 
       // Fuerza la actualización del gráfico
-      console.log("updateDatamask ",component);
-      component.forceUpdate();
+      //console.log("updateDatamask ",component);
+      component.memoizedProps.actions.refreshChart();
+      //console.log("component",component);
     } else {
       console.error('Component memoizedProps or actions not found or updateDataMask is missing:', component);
     }
@@ -529,6 +530,9 @@ const removeCrossFilterAndUpdate = (component) => {
   // Verificar si component.props.actions, component.memoizedProps.actions, o component.actions están definidos
   const actions = component.props?.actions || component.memoizedProps?.actions || component.actions;
   const chartId = component.props?.chartId || component.memoizedProps?.chartId || component.chartId;
+  const dashboardId = component.props?.dashboardId || component.memoizedProps?.dashboardId || component.dashboardId;
+  
+  const props = component.memoizedProps || {};
 
   if (actions && actions.updateDataMask) {
     // Remueve la máscara de datos utilizando updateDataMask
@@ -538,7 +542,10 @@ const removeCrossFilterAndUpdate = (component) => {
     });
 
     // Fuerza la actualización del gráfico
-    component.forceUpdate();
+    actions.refreshChart(chartId,
+      true,
+      dashboardId);
+    console.log("component_errr",component);
   } else {
     console.error('Component actions not found or updateDataMask is missing:', component);
   }
@@ -552,8 +559,12 @@ function extractCrossFilterDetails(crossFilters) {
   }));
 }
 
-window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = null) => {
+
+window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = null, explicacion = null, idInstPresentacion = null) => {
   let rootComponent = null; // Definir rootComponent dentro del alcance de la función
+
+// para explicacion falta poner el procedimiento del voiceoff
+
 
   // Main execution
   const reactComponent = findAnyReactComponent();
@@ -760,6 +771,7 @@ if (reactComponent) {
 };
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
+  
 
   static onBeforeUnload(hasChanged) {
     if (hasChanged) {
@@ -910,17 +922,93 @@ componentDidUpdate() {
   
         //window.handleSupersetMessage = (slice_id, dashboard_id, type, filter = null)
         // Manejar los mensajes de socket_action
-        socket.on('dashboard', ({ type, slice_id, dashboard_id,filter_super }) => {
+        
+        
+        //No usar mensaje dashboard, para lo de las instrucciones
+        // socket.on('dashboard', ({ type, slice_id, dashboard_id,filter_super,explicacion,idInstPresentacion,usrId }) => {
+          
+        //   if (typeof window.handleSupersetMessage === 'function') {
+        //     console.log('Escucho', socket.id);
+        //     window.handleSupersetMessage(slice_id, dashboard_id, type,filter_super,explicacion);
+
+        //   if (idInstPresentacion) {
+        //     console.log('finInst', idInstPresentacion,1)
+        //     console.log('finInst',idInstPresentacion,2);
+        //     const message = {
+        //       room: usrId,
+        //       type: 'finInstruccion',
+        //       idInstPresentacion: idInstPresentacion,
+        //       dashboard_id: dashboard_id,
+        //       socket_id: socket.id,
+        //       user_id: usrId  // Mantener el user_id original
+        //     };
+            
+        //     console.log('finInst',idInstPresentacion);
+        //     socket.emit('message', message);
+        //   }
+        //   } else {
+        //     console.error(`Action ${type} is not a valid function`);
+        //   }
+          
+        //   //this.fetchChartData(5)
+        //   //.then(query => console.log('Query:', query))
+        //   //.catch(error => console.error('Error:', error));
+        // });
+
+
+//let  lastSequenceNumber = 0;
+// const delayExecution = (fn, delay, ...args) => {
+//   setTimeout(() => {
+//     fn(...args);
+//   }, delay);
+// };
+
+socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacion,usrId,idInstPresentacion}) => {
+  
+
+  if (idInstPresentacion) {
+  //  if (sequence_number==1) {
+  //    lastSequenceNumber = 0;
+  //  }
+      // Lógica específica para presentaciones
+      // if (sequence_number === lastSequenceNumber + 1) {
+      //     // El número de secuencia es el siguiente esperado, procesar el mensaje
+      //     lastSequenceNumber = sequence_number;
+
           if (typeof window.handleSupersetMessage === 'function') {
-            console.log('Escucho', socket.id);
-            window.handleSupersetMessage(slice_id, dashboard_id, type,filter_super);
+              console.log('Escucho', socket.id);
+              window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
+
+              const message = {
+                  room: usrId,
+                  type: 'finInstruccion',
+                  idInstPresentacion: idInstPresentacion,
+                  dashboard_id: dashboard_id,
+                  socket_id: socket.id,
+                  user_id: usrId,
+                  
+              };
+
+              
+              console.log('finInst', idInstPresentacion);
+              socket.emit('message', message);  // Emitir el evento 'finInstruccion'
           } else {
-            console.error(`Action ${type} is not a valid function`);
+              console.error(`Action ${type} is not a valid function`);
           }
-          //this.fetchChartData(5)
-          //.then(query => console.log('Query:', query))
-          //.catch(error => console.error('Error:', error));
-        });
+      // } else {
+      //     // El número de secuencia no es el esperado, almacenar el mensaje o manejarlo de otra manera
+      //     console.warn(`Mensaje fuera de orden: esperado ${lastSequenceNumber + 1}, recibido ${sequence_number}`);
+      // }
+  } else {
+ //     Lógica para otras invocaciones
+      if (typeof window.handleSupersetMessage === 'function') {
+          console.log('Escucho', socket.id);
+          window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
+      } else {
+          console.error(`Action ${type} is not a valid function`);
+      }
+  }
+});
         
 
       socket.on('request_dashboard_id', (data) => {
