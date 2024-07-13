@@ -151,6 +151,11 @@ export const PageHeaderWithActions = ({
           </div>
         )}
       </div>
+      <div>
+        <label>
+          <input type="checkbox" id="enableAudioCheckbox" /> Permitir audios
+        </label>
+      </div>
       <div className="right-button-panel">
         {rightPanelAdditionalItems}
         <div css={additionalActionsContainerStyles}>
@@ -160,6 +165,7 @@ export const PageHeaderWithActions = ({
               overlay={additionalActionsMenu}
               {...menuDropdownProps}
             >
+            
               <Button
                 css={menuTriggerStyles}
                 buttonStyle="tertiary"

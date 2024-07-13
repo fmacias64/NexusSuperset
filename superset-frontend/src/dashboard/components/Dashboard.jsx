@@ -96,6 +96,44 @@ const defaultProps = {
   userId: '',
 };
 
+let isAudioEnabled = false;  // Estado inicial del audio
+
+
+// function initializeAudioCheckbox() {
+//   const audioCheckbox = document.getElementById('enableAudioCheckbox');
+  
+//   // Cargar el estado guardado cuando la página se carga
+//   const audioEnabled = localStorage.getItem('audioEnabled');
+//   audioCheckbox.checked = (audioEnabled === 'true');
+
+//   // Asignar el manejador de evento
+//   audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
+// }
+
+function handleAudioCheckboxChange() {
+  const audioCheckbox = document.getElementById('enableAudioCheckbox');
+  if (audioCheckbox.checked) {
+      localStorage.setItem('audioEnabled', 'true');
+      // Código para activar el audio
+      enableAudio();
+  } else {
+      localStorage.setItem('audioEnabled', 'false');
+      // Código para desactivar el audio
+      disableAudio();
+  }
+}
+
+function enableAudio() {
+  isAudioEnabled = true;
+  console.log("Audio enabled");
+  // Aquí podrías añadir cualquier lógica adicional para activar el audio
+}
+
+function disableAudio() {
+  isAudioEnabled = false;
+  console.log("Audio disabled");
+  // Aquí podrías añadir cualquier lógica adicional para desactivar el audio
+}
 
 function highlightChartById(chartId) {
   // Crear la clase CSS dinámicamente
@@ -510,14 +548,22 @@ console.log("aplica crossFilter",component);
 console.log(dataMask);
   if (dataMask) {
     // Verificar si component.props.memoizedProps y component.props.memoizedProps.actions están definidos
-    const actions = component.memoizedProps?.actions;
+    const actions = component.props?.actions || component.memoizedProps?.actions || component.actions;
+    const chartId = component.props?.chartId || component.memoizedProps?.chartId || component.chartId;
+    const dashboardId = component.props?.dashboardId || component.memoizedProps?.dashboardId || component.dashboardId;
     if (actions && actions.updateDataMask) {
       // Aplica la máscara de datos utilizando updateDataMask
       actions.updateDataMask(component.memoizedProps.chartId, dataMask.dataMask);
 
       // Fuerza la actualización del gráfico
       //console.log("updateDatamask ",component);
-      component.memoizedProps.actions.refreshChart();
+      //component.memoizedProps.actions.refreshChart();
+      
+      //abajo funcional pero retrasa
+      //actions.refreshChart(chartId,
+      //  true,
+      //  dashboardId);
+      //console.log("component_errr",component);
       //console.log("component",component);
     } else {
       console.error('Component memoizedProps or actions not found or updateDataMask is missing:', component);
@@ -559,6 +605,195 @@ function extractCrossFilterDetails(crossFilters) {
   }));
 }
 
+function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
+  return new Promise((resolve, reject) => {
+      const audio = new Audio(audioPath);
+      const subtitleDiv = document.createElement('div');
+      // Estilos del subtitleDiv
+      subtitleDiv.style.position = 'fixed';
+      subtitleDiv.style.bottom = '20px';
+      subtitleDiv.style.left = '20px';
+      subtitleDiv.style.padding = '10px';
+      subtitleDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      subtitleDiv.style.color = 'white';
+      subtitleDiv.style.borderRadius = '5px';
+      subtitleDiv.style.fontSize = '16px';
+      subtitleDiv.style.zIndex = '1000';
+      document.body.appendChild(subtitleDiv);
+
+      fetch(subtitlePath)
+          .then(response => response.json())
+          .then(subtitles => {
+              const phrases = subtitles.phrases || [];
+              console.log("phrases",phrases)
+              if (phrases.length === 0 || (phrases.length === 1 && phrases[0].text.trim().length === 1 && ['.', '-', '—'].includes(phrases[0].text.trim()))) {
+                console.log("No substantial subtitles found or a special character is present.");
+                subtitleDiv.innerText = phrases.length === 0 ? "" : phrases[0].text.trim();
+                if (!isAudioEnabled) {
+                  setTimeout(() => {
+                    document.body.removeChild(subtitleDiv);
+                    resolve();
+                  }, 5000);  // Muestra el texto o permanece en silencio durante 5 segundos
+                  return;
+                }
+                audio.play();
+                audio.onended = () => {
+                  document.body.removeChild(subtitleDiv);
+                  resolve();
+                };
+                return;
+              }
+
+              if (!isAudioEnabled) {
+                console.log("Audio is disabled, not playing.");
+                let lastTime = 0;
+                phrases.forEach((phrase, index) => {
+                  setTimeout(() => {
+                    subtitleDiv.innerText = phrase.text;
+                    if (index === phrases.length - 1) {
+                      setTimeout(() => {
+                        document.body.removeChild(subtitleDiv);
+                        resolve();
+                      }, (phrase.end - phrase.start) * 1000);
+                    }
+                  }, (phrase.start - lastTime) * 1000);
+                  lastTime = phrase.start;
+                });
+                return;
+              }
+
+              audio.play();
+              audio.addEventListener('timeupdate', () => {
+                  const currentTime = audio.currentTime;
+                  let currentSubtitle = '';
+                  for (let phrase of phrases) {
+                      if (currentTime >= phrase.start && currentTime <= phrase.end) {
+                          currentSubtitle = phrase.text;
+                          break; // Solo mostrar un subtítulo a la vez
+                      }
+                  }
+                  subtitleDiv.innerText = currentSubtitle.trim();
+              });
+
+              audio.onended = () => {
+                  document.body.removeChild(subtitleDiv);
+                  resolve();
+              };
+          })
+          .catch(error => {
+              document.body.removeChild(subtitleDiv);
+              reject(error);
+          });
+  });
+}
+
+
+// funcional al 12 de julio
+// function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
+//   return new Promise((resolve, reject) => {
+//       const audio = new Audio(audioPath);
+//       const subtitleDiv = document.createElement('div');
+//       // Estilos del subtitleDiv
+//       subtitleDiv.style.position = 'fixed';
+//       subtitleDiv.style.bottom = '20px';
+//       subtitleDiv.style.left = '20px';
+//       subtitleDiv.style.padding = '10px';
+//       subtitleDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+//       subtitleDiv.style.color = 'white';
+//       subtitleDiv.style.borderRadius = '5px';
+//       subtitleDiv.style.fontSize = '16px';
+//       subtitleDiv.style.zIndex = '1000';
+//       document.body.appendChild(subtitleDiv);
+
+//       fetch(subtitlePath)
+//           .then(response => response.json())
+//           .then(subtitles => {
+//               const phrases = subtitles.phrases;
+
+//               if (!isAudioEnabled) {
+//                 console.log("Audio is disabled, not playing.");
+//                 // Simula el paso de tiempo y actualiza los subtítulos
+//                 let lastTime = 0;
+//                 phrases.forEach((phrase, index) => {
+//                   setTimeout(() => {
+//                     subtitleDiv.innerText = phrase.text;
+//                     if (index === phrases.length - 1) {
+//                       setTimeout(() => {
+//                         document.body.removeChild(subtitleDiv);
+//                         resolve();
+//                       }, (phrase.end - phrase.start) * 1000);
+//                     }
+//                   }, (phrase.start - lastTime) * 1000);
+//                   lastTime = phrase.start;
+//                 });
+//                 return;
+//               }
+
+//               audio.play();
+//               audio.addEventListener('timeupdate', () => {
+//                   const currentTime = audio.currentTime;
+//                   let currentSubtitle = '';
+//                   for (let phrase of phrases) {
+//                       if (currentTime >= phrase.start && currentTime <= phrase.end) {
+//                           currentSubtitle = phrase.text;
+//                           break; // Solo mostrar un subtítulo a la vez
+//                       }
+//                   }
+//                   subtitleDiv.innerText = currentSubtitle.trim();
+//               });
+
+//               audio.onended = () => {
+//                   document.body.removeChild(subtitleDiv);
+//                   resolve();
+//               };
+//           })
+//           .catch(error => {
+//               document.body.removeChild(subtitleDiv);
+//               reject(error);
+//           });
+//   });
+// }
+
+// function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
+//   // Crear elementos de audio y div para subtítulos
+//   const audio = new Audio(audioPath);
+//   const subtitleDiv = document.createElement('div');
+//   subtitleDiv.id = 'subtitle';
+//   subtitleDiv.style.position = 'fixed';
+//   subtitleDiv.style.bottom = '20px';
+//   subtitleDiv.style.left = '20px';
+//   subtitleDiv.style.padding = '10px';
+//   subtitleDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+//   subtitleDiv.style.color = 'white';
+//   subtitleDiv.style.borderRadius = '5px';
+//   subtitleDiv.style.fontSize = '16px';
+//   subtitleDiv.style.zIndex = '1000';
+//   document.body.appendChild(subtitleDiv);
+
+//   // Fetch the subtitle JSON
+//   fetch(subtitlePath)
+//       .then(response => response.json())
+//       .then(subtitles => {
+//           const phrases = subtitles.phrases;
+
+//           // Play the audio and sync subtitles
+//           audio.play();
+
+//           // Update subtitles based on current time
+//           audio.addEventListener('timeupdate', () => {
+//               const currentTime = audio.currentTime;
+//               let currentSubtitle = '';
+
+//               phrases.forEach(phrase => {
+//                   if (currentTime >= phrase.start && currentTime <= phrase.end) {
+//                       currentSubtitle = phrase.text;
+//                   }
+//               });
+
+//               subtitleDiv.innerText = currentSubtitle.trim();
+//           });
+//       });
+// }
 
 window.handleSupersetMessage = (slice_id, dashboard_id, type, filter_super = null, explicacion = null, idInstPresentacion = null) => {
   let rootComponent = null; // Definir rootComponent dentro del alcance de la función
@@ -769,6 +1004,15 @@ if (reactComponent) {
   console.log('Script execution completed.');
 };
 };
+
+function handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion) {
+  return new Promise((resolve) => {
+      window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
+      // Si esta función es sincrónica y siempre termina rápidamente, puedes resolver inmediatamente:
+      resolve();
+  });
+}
+
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
   
@@ -863,6 +1107,7 @@ class Dashboard extends React.PureComponent {
 
 componentDidUpdate() {
   this.applyCharts();
+  this.initializeAudioCheckbox();
 }
 
 
@@ -884,6 +1129,7 @@ componentDidUpdate() {
       eventData.target_id = directLinkComponentId;
     }
     this.props.actions.logEvent(LOG_ACTIONS_MOUNT_DASHBOARD, eventData);
+    
 
     // Handle browser tab visibility change
     if (document.visibilityState === 'hidden') {
@@ -956,48 +1202,73 @@ componentDidUpdate() {
         // });
 
 
-//let  lastSequenceNumber = 0;
+let  lastSequenceNumber = 0;
 // const delayExecution = (fn, delay, ...args) => {
 //   setTimeout(() => {
 //     fn(...args);
 //   }, delay);
 // };
 
-socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacion,usrId,idInstPresentacion}) => {
+socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacion,usrId,idInstPresentacion, audio_path, sub_path}) => {
+  
+ 
+  if (idInstPresentacion) {
+    if (typeof window.handleSupersetMessage === 'function') {
+        console.log('Escuchando:', socket.id);
+
+        Promise.all([
+            handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion),
+            playAudioWithGroupedSubtitles(audio_path, sub_path)
+        ]).then(() => {
+            const message = {
+                room: usrId,
+                type: 'finInstruccion',
+                idInstPresentacion: idInstPresentacion,
+                dashboard_id: dashboard_id,
+                socket_id: socket.id,
+                user_id: usrId,
+            };
+            console.log('finInst', idInstPresentacion);
+            socket.emit('message', message);  // Emitir el evento 'finInstruccion' después de completar ambas tareas
+        }).catch(error => {
+            console.error("Error al ejecutar funciones:", error);
+        });
+    } else {
+        console.error(`Action ${type} is not a valid function`);
+    }
+
+
+
   
 
-  if (idInstPresentacion) {
-  //  if (sequence_number==1) {
-  //    lastSequenceNumber = 0;
-  //  }
-      // Lógica específica para presentaciones
-      // if (sequence_number === lastSequenceNumber + 1) {
-      //     // El número de secuencia es el siguiente esperado, procesar el mensaje
-      //     lastSequenceNumber = sequence_number;
+// alternativa funcional abajo, descomentar a partir de aqui
+          // if (typeof window.handleSupersetMessage === 'function') {
+          //   setTimeout(() => {
+          //     playAudioWithGroupedSubtitles(audio_path, sub_path);
+          // }, 0);
+          //     console.log('Escucho', socket.id);
+          //     window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
 
-          if (typeof window.handleSupersetMessage === 'function') {
-              console.log('Escucho', socket.id);
-              window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
-
-              const message = {
-                  room: usrId,
-                  type: 'finInstruccion',
-                  idInstPresentacion: idInstPresentacion,
-                  dashboard_id: dashboard_id,
-                  socket_id: socket.id,
-                  user_id: usrId,
+          //     const message = {
+          //         room: usrId,
+          //         type: 'finInstruccion',
+          //         idInstPresentacion: idInstPresentacion,
+          //         dashboard_id: dashboard_id,
+          //         socket_id: socket.id,
+          //         user_id: usrId,
                   
-              };
+          //     };
 
               
-              console.log('finInst', idInstPresentacion);
-              socket.emit('message', message);  // Emitir el evento 'finInstruccion'
-          } else {
-              console.error(`Action ${type} is not a valid function`);
-          }
-      // } else {
-      //     // El número de secuencia no es el esperado, almacenar el mensaje o manejarlo de otra manera
-      //     console.warn(`Mensaje fuera de orden: esperado ${lastSequenceNumber + 1}, recibido ${sequence_number}`);
+          //     console.log('finInst', idInstPresentacion);
+          //     socket.emit('message', message);  // Emitir el evento 'finInstruccion'
+          // } else {
+          //     console.error(`Action ${type} is not a valid function`);
+          // }
+ 
+// hasta aqui descomentar
+
+
       // }
   } else {
  //     Lógica para otras invocaciones
@@ -1101,6 +1372,19 @@ socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacio
       );
     }
   }
+
+  
+initializeAudioCheckbox() {
+  const audioCheckbox = document.getElementById('enableAudioCheckbox');
+  
+  // Cargar el estado guardado cuando la página se carga
+  const audioEnabled = localStorage.getItem('audioEnabled');
+  audioCheckbox.checked = (audioEnabled === 'true');
+
+  // Asignar el manejador de evento
+  audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
+}
+
 
   applyCharts() {
     const { hasUnsavedChanges, editMode } = this.props.dashboardState;
