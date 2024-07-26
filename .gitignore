@@ -61,7 +61,7 @@ tmp
 rat-results.txt
 superset/app/
 superset-websocket/config.json
-
+*.mp3
 # Node.js, webpack artifacts, storybook
 *.entry.js
 *.js.map

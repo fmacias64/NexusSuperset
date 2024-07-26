@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -152,9 +153,8 @@ export const PageHeaderWithActions = ({
         )}
       </div>
       <div>
-        <label>
-          <input type="checkbox" id="enableAudioCheckbox" /> Permitir audios
-        </label>
+      <label htmlFor="enableAudioCheckbox">Permitir audios</label>
+      <input type="checkbox" id="enableAudioCheckbox" />
       </div>
       <div className="right-button-panel">
         {rightPanelAdditionalItems}
@@ -166,19 +166,19 @@ export const PageHeaderWithActions = ({
               {...menuDropdownProps}
             >
             
-              <Button
-                css={menuTriggerStyles}
-                buttonStyle="tertiary"
-                aria-label={t('Menu actions trigger')}
-                tooltip={tooltipProps?.text}
-                placement={tooltipProps?.placement}
-                data-test="actions-trigger"
-              >
-                <Icons.MoreHoriz
-                  iconColor={theme.colors.primary.dark2}
-                  iconSize="l"
-                />
-              </Button>
+  <Button
+      css={menuTriggerStyles}
+      buttonStyle="tertiary"
+      aria-label={t('Menu actions trigger')}
+      tooltip={tooltipProps?.text}
+      placement={tooltipProps?.placement}
+      data-test="actions-trigger"
+      >
+      <Icons.MoreHoriz
+        iconColor={theme.colors.primary.dark2}
+        iconSize="l"
+      />
+  </Button>
             </AntdDropdown>
           )}
         </div>

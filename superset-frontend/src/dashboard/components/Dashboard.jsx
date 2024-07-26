@@ -147,8 +147,8 @@ function highlightChartById(chartId) {
   `;
   document.head.appendChild(style);
 
-  // Seleccionar el div específico con los atributos data-test y dashboard-chart-id
-  const chartElement = document.querySelector(`div[data-test="dashboard-component-chart-holder"].dashboard-chart-id-${chartId}`);
+  // Seleccionar el div específico solo con las clases
+  const chartElement = document.querySelector(`div.dashboard-component-chart-holder.dashboard-chart-id-${chartId}`);
 
   // Si el div existe, desplazarse hacia él y luego aplicar el resalte
   if (chartElement) {

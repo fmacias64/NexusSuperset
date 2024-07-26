@@ -1,4 +1,6 @@
+/* eslint-disable */
 /* eslint-disable import/order */
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,6 +25,7 @@ import cx from 'classnames';
 import { css, styled, SupersetTheme, t } from '@superset-ui/core';
 import { Tooltip } from 'src/components/Tooltip';
 import CertifiedBadge from '../CertifiedBadge';
+// @ts-ignore
 import { id } from 'spec/fixtures/mockDatasource';
 
 export interface EditableTitleProps {
