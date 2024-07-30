@@ -62,7 +62,7 @@ if (window.location.href.includes("localhost") || window.location.href.includes(
   apiBaseUrl = "http://www.posicion.mx:8088";
   socketServerUrl = "https://www.posicion.mx:4000";
   tokenServerUrl = "https://pofc.posicion.mx";
-  apiKey = "JusasaJ313414J";
+  apiKey = process.env.apiKey;
 }
 
 // Ahora puedes usar apiBaseUrl, socketServerUrl, tokenServerUrl y apiKey en tu código
@@ -96,7 +96,7 @@ const defaultProps = {
   userId: '',
 };
 
-let isAudioEnabled = false;  // Estado inicial del audio
+//let isAudioEnabled = false;  // Estado inicial del audio
 
 
 // function initializeAudioCheckbox() {
@@ -111,28 +111,34 @@ let isAudioEnabled = false;  // Estado inicial del audio
 // }
 
 function handleAudioCheckboxChange() {
-  const audioCheckbox = document.getElementById('enableAudioCheckbox');
-  if (audioCheckbox.checked) {
-      localStorage.setItem('audioEnabled', 'true');
-      // Código para activar el audio
-      enableAudio();
+  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+  if (audioEnabledHidden && audioEnabledHidden.value === 'true') {
+    localStorage.setItem('audioEnabled', 'true');
+    enableAudio(); // Activa el audio
   } else {
-      localStorage.setItem('audioEnabled', 'false');
-      // Código para desactivar el audio
-      disableAudio();
+    localStorage.setItem('audioEnabled', 'false');
+    disableAudio(); // Desactiva el audio
   }
 }
 
 function enableAudio() {
-  isAudioEnabled = true;
-  console.log("Audio enabled");
-  // Aquí podrías añadir cualquier lógica adicional para activar el audio
+  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+  if (audioEnabledHidden) {
+    audioEnabledHidden.value = 'true';
+    localStorage.setItem('audioEnabled', 'true');
+    console.log("Audio enabled");
+    // Lógica adicional para activar el audio
+  }
 }
 
 function disableAudio() {
-  isAudioEnabled = false;
-  console.log("Audio disabled");
-  // Aquí podrías añadir cualquier lógica adicional para desactivar el audio
+  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+  if (audioEnabledHidden) {
+    audioEnabledHidden.value = 'false';
+    localStorage.setItem('audioEnabled', 'false');
+    console.log("Audio disabled");
+    // Lógica adicional para desactivar el audio
+  }
 }
 
 function highlightChartById(chartId) {
@@ -603,6 +609,79 @@ function extractCrossFilterDetails(crossFilters) {
     value: filter.value,
     emitterId: filter.emitterId,
   }));
+}
+function TextToSpeech(s) {
+  return new Promise((resolve, reject) => {
+    var sModelId = "tts-1";
+    var sVoiceId = "echo";
+    var API_KEY = process.env.API_KEY;
+    var oHttp = new XMLHttpRequest();
+    oHttp.onreadystatechange = function () {
+      if (oHttp.readyState === 4) {
+        if (oHttp.status === 200) {
+          var oBlob = new Blob([oHttp.response], { "type": "audio/mpeg" });
+          var audioURL = window.URL.createObjectURL(oBlob);
+          var audio = new Audio(audioURL);
+          resolve(audio);
+        } else {
+          reject('Error en la solicitud: ' + oHttp.statusText);
+        }
+      }
+    };
+    oHttp.open("POST", "https://api.openai.com/v1/audio/speech");
+    oHttp.setRequestHeader("Accept", "audio/mpeg");
+    oHttp.setRequestHeader("Content-Type", "application/json");
+    oHttp.setRequestHeader("Authorization", "Bearer " + API_KEY);
+     
+    console.log("la s",s);
+    var data = {
+        model: sModelId,
+        input: s,
+        voice: sVoiceId
+    };
+    oHttp.responseType = "arraybuffer";
+    console.log("data",data);
+    oHttp.send(JSON.stringify(data));
+    
+  });
+}
+
+
+function playTextWithSubtitles(text) {
+  return new Promise((resolve, reject) => {
+      const subtitleDiv = document.createElement('div');
+      subtitleDiv.style.position = 'fixed';
+      subtitleDiv.style.bottom = '20px';
+      subtitleDiv.style.left = '20px';
+      subtitleDiv.style.padding = '10px';
+      subtitleDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      subtitleDiv.style.color = 'white';
+      subtitleDiv.style.borderRadius = '5px';
+      subtitleDiv.style.fontSize = '16px';
+      subtitleDiv.style.zIndex = '1000';
+      document.body.appendChild(subtitleDiv);
+      subtitleDiv.innerText = text;
+
+      if (!isAudioEnabled) {
+          console.log("Audio is disabled, not playing.");
+          setTimeout(() => {
+              document.body.removeChild(subtitleDiv);
+              resolve();
+          }, 5000); // Muestra el subtítulo por 5 segundos antes de eliminarlo.
+          return;
+      }
+
+      TextToSpeech(text).then(audio => {
+        audio.onended = () => {
+          document.body.removeChild(subtitleDiv);
+          resolve();
+        };
+        audio.play();
+      }).catch(error => {
+        document.body.removeChild(subtitleDiv);
+        reject(error);
+      });
+  });
 }
 
 function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
@@ -1107,7 +1186,7 @@ class Dashboard extends React.PureComponent {
 
 componentDidUpdate() {
   this.applyCharts();
-  this.initializeAudioCheckbox();
+  //this.initializeAudioCheckbox();
 }
 
 
@@ -1215,11 +1294,15 @@ socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacio
   if (idInstPresentacion) {
     if (typeof window.handleSupersetMessage === 'function') {
         console.log('Escuchando:', socket.id);
+        let promises = [handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion)];
 
-        Promise.all([
-            handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion),
-            playAudioWithGroupedSubtitles(audio_path, sub_path)
-        ]).then(() => {
+        // Solo agregar playTextWithSubtitles a las promesas si explicacion no es undefined o un string vacío
+        if (explicacion) {
+            promises.push(playTextWithSubtitles(explicacion));
+        } else {
+            console.log("No se proporcionó una explicación válida, se omite playTextWithSubtitles.");
+        }
+        Promise.all(promises).then(() => {
             const message = {
                 room: usrId,
                 type: 'finInstruccion',
@@ -1374,16 +1457,16 @@ socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacio
   }
 
   
-initializeAudioCheckbox() {
-  const audioCheckbox = document.getElementById('enableAudioCheckbox');
+// initializeAudioCheckbox() {
+//   const audioCheckbox = document.getElementById('enableAudioCheckbox');
   
-  // Cargar el estado guardado cuando la página se carga
-  const audioEnabled = localStorage.getItem('audioEnabled');
-  audioCheckbox.checked = (audioEnabled === 'true');
+//   // Cargar el estado guardado cuando la página se carga
+//   const audioEnabled = localStorage.getItem('audioEnabled');
+//   audioCheckbox.checked = (audioEnabled === 'true');
 
-  // Asignar el manejador de evento
-  audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
-}
+//   // Asignar el manejador de evento
+//   audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
+// }
 
 
   applyCharts() {

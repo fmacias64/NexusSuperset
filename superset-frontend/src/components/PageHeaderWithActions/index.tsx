@@ -17,9 +17,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactNode, ReactElement, useEffect, useRef } from 'react';
 import { css, SupersetTheme, t, useTheme } from '@superset-ui/core';
 import { AntdDropdown, AntdDropdownProps } from 'src/components';
+import QABtnComponent from './QABtnComponent'; // Asegúrate de que la ruta sea correcta
+
 import { TooltipPlacement } from 'src/components/Tooltip';
 import {
   DynamicEditableTitle,
@@ -55,7 +57,7 @@ const headerStyles = (theme: SupersetTheme) => css`
   align-items: center;
   flex-wrap: nowrap;
   justify-content: space-between;
-  background-color: ${theme.colors.grayscale.light5};
+  background-color: ${theme.colors.grayscale.light5}; const toggleAudioButton = document.getElementById('toggleAudioButton');
   height: ${theme.gridUnit * 16}px;
   padding: 0 ${theme.gridUnit * 4}px;
 
@@ -87,6 +89,55 @@ const headerStyles = (theme: SupersetTheme) => css`
     display: flex;
     align-items: center;
   }
+  /* styles.css */
+.audio-disabled {
+  background-color: red;
+}
+
+.audio-enabled {
+  background-color: green;
+}
+
+.dashboard-qa-button-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-qa-input-div {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  border: 1px solid black;
+  padding: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+/* dashboard-qa-styles.css */
+.qa-textarea {
+  width: 300px; /* Ajusta el ancho del textarea */
+  height: 100px; /* Ajusta la altura para mostrar múltiples líneas */
+  padding: 10px; /* Espacio interno alrededor del texto */
+  font-size: 16px; /* Tamaño de la fuente */
+  border-radius: 4px; /* Esquinas redondeadas opcionales */
+  border: 1px solid #ccc; /* Estilo del borde */
+  box-sizing: border-box; /* Incluye padding y border en las dimensiones totales */
+  resize: vertical; /* Permite al usuario ajustar la altura */
+}
+
+.qa-input {
+  width: 300px; /* Ajusta el ancho deseado */
+  height: 50px; /* Ajusta la altura deseada */
+  padding: 10px; /* Espacio interno alrededor del texto */
+  font-size: 16px; /* Tamaño de la fuente */
+  border-radius: 4px; /* Esquinas redondeadas opcionales */
+  border: 1px solid #ccc; /* Estilo del borde */
+  box-sizing: border-box; /* Incluye padding y border en las dimensiones totales */
+}
+
+
 `;
 
 const buttonsStyles = (theme: SupersetTheme) => css`
@@ -123,7 +174,6 @@ export type PageHeaderWithActionsProps = {
     placement?: TooltipPlacement;
   };
 };
-
 export const PageHeaderWithActions = ({
   editableTitleProps,
   showTitlePanelItems,
@@ -138,6 +188,47 @@ export const PageHeaderWithActions = ({
   tooltipProps,
 }: PageHeaderWithActionsProps) => {
   const theme = useTheme();
+  const toggleAudioButtonRef = useRef(null);
+  const audioEnabledHiddenRef = useRef(null);
+  
+  useEffect(() => {
+    const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+    const toggleAudioButton = document.getElementById('toggleAudioButton');
+
+    function enableAudio() {
+      console.log("Audio enabled");
+      audioEnabledHidden.value = 'true';
+      localStorage.setItem('audioEnabled', 'true');
+      toggleAudioButton.classList.remove('audio-disabled');
+      toggleAudioButton.classList.add('audio-enabled');
+      toggleAudioButton.textContent = 'Audio Enabled';
+    }
+
+    function disableAudio() {
+      console.log("Audio disabled");
+      audioEnabledHidden.value = 'false';
+      localStorage.setItem('audioEnabled', 'false');
+      toggleAudioButton.classList.remove('audio-enabled');
+      toggleAudioButton.classList.add('audio-disabled');
+      toggleAudioButton.textContent = 'Audio Disabled';
+    }
+
+    function handleButtonClick() {
+      if (audioEnabledHidden.value === 'false') {
+        enableAudio();
+      } else {
+        disableAudio();
+      }
+    }
+
+    toggleAudioButton.addEventListener('click', handleButtonClick);
+
+    return () => {
+      toggleAudioButton.removeEventListener('click', handleButtonClick);
+    };
+  }, []); // Empty dependency array ensures this runs only once after initial render
+
+
   return (
     <div css={headerStyles} className="header-with-actions">
       <div className="title-panel">
@@ -153,9 +244,13 @@ export const PageHeaderWithActions = ({
         )}
       </div>
       <div>
-      <label htmlFor="enableAudioCheckbox">Permitir audios</label>
-      <input type="checkbox" id="enableAudioCheckbox" />
+      <div className="dashboard-qa-button-container">
+  <button id="toggleAudioButton" className="audio-disabled">Audio Disabled</button>
+  <input type="hidden" id="audioEnabledHidden" value="false" />
+  <QABtnComponent />
+</div>
       </div>
+      
       <div className="right-button-panel">
         {rightPanelAdditionalItems}
         <div css={additionalActionsContainerStyles}>

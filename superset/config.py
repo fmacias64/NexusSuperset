@@ -1466,6 +1466,7 @@ TALISMAN_CONFIG = {
     "content_security_policy": {
         "base-uri": ["'self'"],
         "default-src": ["'self'"],
+        "media-src": ["'self'", "blob:"],
         "img-src": [
             "'self'",
             "blob:",
@@ -1484,6 +1485,7 @@ TALISMAN_CONFIG = {
             "https://pofc.posicion.mx",
             "http://www.posicion.mx:8088",
             "https://www.posicion.mx:4000",
+            "https://api.openai.com",
         ],
         "object-src": "'none'",
         "style-src": [
@@ -1501,6 +1503,7 @@ TALISMAN_DEV_CONFIG = {
     "content_security_policy": {
         "base-uri": ["'self'"],
         "default-src": ["'self'"],
+          "media-src": ["'self'", "blob:"],
         "img-src": [
             "'self'",
             "blob:",
@@ -1519,6 +1522,9 @@ TALISMAN_DEV_CONFIG = {
             "https://pofc.posicion.mx",
             "http://www.posicion.mx:8088",
             "https://www.posicion.mx:4000",
+            "https://api.openai.com",
+            "ws://localhost:4000",
+            "ws://www.posicion.mx:4000"
         ],
         "object-src": "'none'",
         "style-src": [

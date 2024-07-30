@@ -1,0 +1,9 @@
+/* styles.css */
+.audio-disabled {
+    background-color: red;
+  }
+  
+  .audio-enabled {
+    background-color: green;
+  }
+  
