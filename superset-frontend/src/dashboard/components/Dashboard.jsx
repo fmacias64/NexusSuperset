@@ -47,6 +47,7 @@ import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
 
 import { getUrlParam } from 'src/utils/urlUtils';
 import { URL_PARAMS } from 'src/constants';
+require('dotenv').config();
 
 let apiBaseUrl;
 let socketServerUrl;
@@ -57,7 +58,7 @@ if (window.location.href.includes("localhost") || window.location.href.includes(
   apiBaseUrl = "http://localhost:8088";
   socketServerUrl = "http://localhost:4000";
   tokenServerUrl = "http://localhost:8000";
-  apiKey = "JusasaJ313414J";
+  apiKey = process.env.apiKey;
 } else if (window.location.href.includes("posicion")) {
   apiBaseUrl = "http://www.posicion.mx:8088";
   socketServerUrl = "https://www.posicion.mx:4000";
