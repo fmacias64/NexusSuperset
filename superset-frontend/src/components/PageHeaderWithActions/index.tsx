@@ -95,7 +95,7 @@ const headerStyles = (theme: SupersetTheme) => css`
 }
 
 .audio-enabled {
-  background-color: green;
+  background-color: green;radiance asparagus 0442
 }
 
 .dashboard-qa-button-container {
@@ -136,7 +136,13 @@ const headerStyles = (theme: SupersetTheme) => css`
   border: 1px solid #ccc; /* Estilo del borde */
   box-sizing: border-box; /* Incluye padding y border en las dimensiones totales */
 }
+.dashboard-qa-input-div.hidden {
+  display: none; 
+}
 
+.dashboard-qa-input-div.visible {
+  display: block; 
+}
 
 `;
 
@@ -188,46 +194,121 @@ export const PageHeaderWithActions = ({
   tooltipProps,
 }: PageHeaderWithActionsProps) => {
   const theme = useTheme();
+  // @ts-ignore
   const toggleAudioButtonRef = useRef(null);
+  // @ts-ignore
   const audioEnabledHiddenRef = useRef(null);
   
   useEffect(() => {
-    const audioEnabledHidden = document.getElementById('audioEnabledHidden');
-    const toggleAudioButton = document.getElementById('toggleAudioButton');
+    //const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+    const toggleAudioButton = toggleAudioButtonRef.current;
 
-    function enableAudio() {
-      console.log("Audio enabled");
-      audioEnabledHidden.value = 'true';
-      localStorage.setItem('audioEnabled', 'true');
-      toggleAudioButton.classList.remove('audio-disabled');
-      toggleAudioButton.classList.add('audio-enabled');
-      toggleAudioButton.textContent = 'Audio Enabled';
-    }
+ // Leer el estado del audio desde localStorage
+ // @ts-ignore
+  
+ const isAudioEnabled = localStorage.getItem('audioEnabled') === 'true';
 
-    function disableAudio() {
-      console.log("Audio disabled");
-      audioEnabledHidden.value = 'false';
-      localStorage.setItem('audioEnabled', 'false');
-      toggleAudioButton.classList.remove('audio-enabled');
-      toggleAudioButton.classList.add('audio-disabled');
-      toggleAudioButton.textContent = 'Audio Disabled';
-    }
+ const updateButtonUI = () => {
+  const isAudioEnabled = localStorage.getItem('audioEnabled') === 'true';
+  if (isAudioEnabled) {
+  // @ts-ignore
+  
+    toggleAudioButton.classList.remove('audio-disabled');
+ // @ts-ignore
+  
+    toggleAudioButton.classList.add('audio-enabled');
+  // @ts-ignore
+  
+    toggleAudioButton.textContent = 'Audio Enabled';
+  } else {
+    // @ts-ignore
+  
+    toggleAudioButton.classList.remove('audio-enabled');
+  // @ts-ignore
+  
+    toggleAudioButton.classList.add('audio-disabled');
+  // @ts-ignore
+  
+    toggleAudioButton.textContent = 'Audio Disabled';
+  }
+};
 
-    function handleButtonClick() {
-      if (audioEnabledHidden.value === 'false') {
-        enableAudio();
-      } else {
-        disableAudio();
-      }
-    }
+const enableAudio = () => {
+  localStorage.setItem('audioEnabled', 'true');
+  updateButtonUI();
+};
 
-    toggleAudioButton.addEventListener('click', handleButtonClick);
+const disableAudio = () => {
+  localStorage.setItem('audioEnabled', 'false');
+  updateButtonUI();
+};
 
-    return () => {
-      toggleAudioButton.removeEventListener('click', handleButtonClick);
-    };
-  }, []); // Empty dependency array ensures this runs only once after initial render
+const handleButtonClick = () => {
+  const isAudioEnabled = localStorage.getItem('audioEnabled') === 'true';
+  if (isAudioEnabled) {
+    disableAudio();
+  } else {
+    enableAudio();
+  }
+};
 
+
+
+// Inicializar la UI del botón según el estado actual del audio
+
+
+
+ // Establecer el valor del input hidden según el estado del audio
+//  if (audioEnabledHidden) {
+//    audioEnabledHidden.value = isAudioEnabled.toString();
+//  }
+//     function enableAudio() {
+//       console.log("Audio enabled");
+//       // @ts-ignore
+//       audioEnabledHidden.value = 'true';
+//       localStorage.setItem('audioEnabled', 'true');
+//       // @ts-ignore
+//       toggleAudioButton.classList.remove('audio-disabled');
+//       // @ts-ignore
+//       toggleAudioButton.classList.add('audio-enabled');
+//       // @ts-ignore
+//       toggleAudioButton.textContent = 'Audio Enabled';
+//     }
+
+//     function disableAudio() {
+//       console.log("Audio disabled");
+//       // @ts-ignore
+//       audioEnabledHidden.value = 'false';
+//       localStorage.setItem('audioEnabled', 'false');
+//       // @ts-ignore
+//       toggleAudioButton.classList.remove('audio-enabled');
+//       // @ts-ignore
+//       toggleAudioButton.classList.add('audio-disabled');
+//       // @ts-ignore
+//       toggleAudioButton.textContent = 'Audio Disabled';
+//     }
+    
+    // function handleButtonClick() {
+    //   // @ts-ignore
+    //   if (audioEnabledHidden.value === 'false') {
+    //     enableAudio();
+    //   } else {
+    //     disableAudio();
+    //   }
+    // }
+// @ts-ignore
+if (toggleAudioButton) {
+  // @ts-ignore
+  toggleAudioButton.addEventListener('click', handleButtonClick);
+  updateButtonUI();
+}
+return () => {
+  if (toggleAudioButton) {
+    // @ts-ignore
+    toggleAudioButton.removeEventListener('click', handleButtonClick);
+  }
+};
+}, []);
 
   return (
     <div css={headerStyles} className="header-with-actions">
@@ -245,8 +326,11 @@ export const PageHeaderWithActions = ({
       </div>
       <div>
       <div className="dashboard-qa-button-container">
-  <button id="toggleAudioButton" className="audio-disabled">Audio Disabled</button>
-  <input type="hidden" id="audioEnabledHidden" value="false" />
+      <button id="toggleAudioButton" className="audio-disabled" ref={toggleAudioButtonRef}>
+  Audio Disabled
+</button>
+
+
   <QABtnComponent />
 </div>
       </div>

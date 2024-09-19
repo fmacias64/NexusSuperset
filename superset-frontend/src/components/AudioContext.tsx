@@ -1,24 +1,60 @@
+/* eslint-disable */
 // AudioContext.tsx
-import React, { createContext, useState, ReactNode} from 'react';
+// audioContext.tsx
+const AudioControl = (function() {
+  let isAudioEnabled = localStorage.getItem('audioEnabled') === 'true';
 
-type AudioContextType = {
-  isAudioEnabled: boolean;
-  setIsAudioEnabled: (enabled: boolean) => void;
-};
+  function saveAudioState() {
+    localStorage.setItem('audioEnabled', isAudioEnabled.toString());
+  }
 
-// Crear el contexto con un valor predeterminado para evitar undefined
-export const AudioContext = createContext<AudioContextType>({
-  isAudioEnabled: false,
-  setIsAudioEnabled: () => {},
-});
+  function toggleAudioState() {
+    isAudioEnabled = !isAudioEnabled;
+    saveAudioState();
+    updateAudioButtonUI();
+  }
 
-// Proveedor de contexto
-export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  function getAudioState() {
+    return isAudioEnabled;
+  }
 
-  return (
-    <AudioContext.Provider value={{ isAudioEnabled, setIsAudioEnabled }}>
-      {children}
-    </AudioContext.Provider>
-  );
-};
+  function updateAudioButtonUI() {
+    const toggleAudioButton = document.getElementById('toggleAudioButton');
+    if (toggleAudioButton) {
+      toggleAudioButton.textContent = isAudioEnabled ? 'Audio Enabled' : 'Audio Disabled';
+      toggleAudioButton.className = isAudioEnabled ? 'audio-enabled' : 'audio-disabled';
+    }
+  }
+
+  return {
+    toggleAudioState,
+    getAudioState,
+    updateAudioButtonUI,
+  };
+})();
+
+export default AudioControl;
+
+// import React, { createContext, useState, ReactNode} from 'react';
+
+// type AudioContextType = {
+//   isAudioEnabled: boolean;
+//   setIsAudioEnabled: (enabled: boolean) => void;
+// };
+
+// // Crear el contexto con un valor predeterminado para evitar undefined
+// export const AudioContext = createContext<AudioContextType>({
+//   isAudioEnabled: false,
+//   setIsAudioEnabled: () => {},
+// });
+
+// // Proveedor de contexto
+// export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+//   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+
+//   return (
+//     <AudioContext.Provider value={{ isAudioEnabled, setIsAudioEnabled }}>
+//       {children}
+//     </AudioContext.Provider>
+//   );
+// };

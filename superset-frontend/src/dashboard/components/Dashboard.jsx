@@ -47,25 +47,36 @@ import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
 
 import { getUrlParam } from 'src/utils/urlUtils';
 import { URL_PARAMS } from 'src/constants';
-require('dotenv').config();
 
 let apiBaseUrl;
 let socketServerUrl;
 let tokenServerUrl;
 let apiKey;
 
+let API_KEY;
 if (window.location.href.includes("localhost") || window.location.href.includes("127.0.0.1")) {
   apiBaseUrl = "http://localhost:8088";
   socketServerUrl = "http://localhost:4000";
   tokenServerUrl = "http://localhost:8000";
-  apiKey = process.env.apiKey;
+  
 } else if (window.location.href.includes("posicion")) {
   apiBaseUrl = "http://www.posicion.mx:8088";
   socketServerUrl = "https://www.posicion.mx:4000";
   tokenServerUrl = "https://pofc.posicion.mx";
-  apiKey = process.env.apiKey;
+ 
 }
 
+function obtenerClavesAPI() {
+  return axios.post(`${tokenServerUrl}/obtenAK`)
+    .then(response => {
+      const { API_KEY, apiKey } = response.data;
+      return [API_KEY, apiKey];
+    })
+    .catch(error => {
+      console.error('Error al obtener las claves:', error);
+      return null;
+    });
+}
 // Ahora puedes usar apiBaseUrl, socketServerUrl, tokenServerUrl y apiKey en tu código
 console.log(apiBaseUrl, socketServerUrl, tokenServerUrl, apiKey);
 
@@ -111,36 +122,46 @@ const defaultProps = {
 //   audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
 // }
 
-function handleAudioCheckboxChange() {
-  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
-  if (audioEnabledHidden && audioEnabledHidden.value === 'true') {
-    localStorage.setItem('audioEnabled', 'true');
-    enableAudio(); // Activa el audio
-  } else {
-    localStorage.setItem('audioEnabled', 'false');
-    disableAudio(); // Desactiva el audio
-  }
-}
 
-function enableAudio() {
-  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
-  if (audioEnabledHidden) {
-    audioEnabledHidden.value = 'true';
-    localStorage.setItem('audioEnabled', 'true');
-    console.log("Audio enabled");
-    // Lógica adicional para activar el audio
-  }
-}
 
-function disableAudio() {
-  const audioEnabledHidden = document.getElementById('audioEnabledHidden');
-  if (audioEnabledHidden) {
-    audioEnabledHidden.value = 'false';
-    localStorage.setItem('audioEnabled', 'false');
-    console.log("Audio disabled");
-    // Lógica adicional para desactivar el audio
-  }
-}
+// function handleAudioCheckboxChange() {
+//  // const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+//   console.log(audioEnabledHidden);
+//   if (audioEnabledHidden && audioEnabledHidden.value === 'true') {
+//     isAudioEnabled = true;
+//     localStorage.setItem('audioEnabled', 'true');
+//     enableAudio(); // Activa el audio
+//   } else {
+//     isAudioEnabled = false;
+//     localStorage.setItem('audioEnabled', 'false');
+//     disableAudio(); // Desactiva el audio
+//   }
+// }
+
+// function enableAudio() {
+//   const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+//   if (audioEnabledHidden) {
+//     audioEnabledHidden.value = 'true';
+//     isAudioEnabled = true;
+//     localStorage.setItem('audioEnabled', 'true');
+//     console.log("Audio enabled");
+//     // Lógica adicional para activar el audio
+//   }
+// }
+
+// function disableAudio() {
+//   const audioEnabledHidden = document.getElementById('audioEnabledHidden');
+//   if (audioEnabledHidden) {
+//     audioEnabledHidden.value = 'false';
+//     isAudioEnabled = false;
+//     localStorage.setItem('audioEnabled', 'false');
+//     console.log("Audio disabled");
+//     // Lógica adicional para desactivar el audio
+//   }
+// }
+
+
+
 
 function highlightChartById(chartId) {
   // Crear la clase CSS dinámicamente
@@ -174,7 +195,7 @@ function highlightChartById(chartId) {
 }
 
 // Función para determinar si estamos en producción
-function isProduction() {
+export function isProduction() {
   return window.location.href.includes("posicion");
 }
 
@@ -193,7 +214,7 @@ function isProduction() {
 //      ######  #    #  ####  #    # #####   ####  #    # #    # #####  ### ######  
 //                                                                                  
 
-const getDashboardIdFromUrl = () => {
+export const getDashboardIdFromUrl = () => {
   try {
     const url = window.location.pathname;
     const match = url.match(/\/dashboard\/(\d+)\//);
@@ -238,7 +259,290 @@ const getDashboardIdFromUrl = () => {
 //                                                                         
 
 ////////////////////////////////////////////////////////////////////
-function findReactComponent(dom) {
+export function traverseForCrossFilters(rootComponent) {
+  if (!rootComponent) {
+    return null;
+  }
+
+  function traverseReactTreeP(reactComponent) {
+    if (!reactComponent) return null;
+
+    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+    const props = reactComponent.memoizedProps || {};
+
+    if (props.crossFilters) {
+      console.log('Working with CrossFiltersVerticalCollapse component:');
+      console.log('Component Name:', componentName);
+      console.log('Props:', props);
+      return reactComponent; // Devolver el componente en lugar de los detalles del cross filter
+    }
+
+    // Recorrer nodos hijos recursivamente
+    if (reactComponent.child) {
+      const result = traverseReactTreeP(reactComponent.child);
+      if (result) return result; // Detener la búsqueda si se encuentra un resultado
+    }
+
+    // Recorrer nodos hermanos
+    if (reactComponent.sibling) {
+      const result = traverseReactTreeP(reactComponent.sibling);
+      if (result) return result; // Detener la búsqueda si se encuentra un resultado
+    }
+
+    return null;
+  }
+
+  return traverseReactTreeP(rootComponent.current);
+}
+
+export function searchComponentCF(rootComponent, sliceId, dashboardId, type, tabKey = 'none') {
+  if (!rootComponent || type !== 'getCrossFilters') {
+    return null;
+  }
+
+  function traverseReactTree(reactComponent) {
+    if (!reactComponent) return null;
+
+    const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+    const props = reactComponent.memoizedProps || {};
+    
+    // Verificar si el componente actual es el que se busca
+    if (componentName === 'CrossFiltersVerticalCollapse' && props.crossFilters) {
+      console.log(`Found component with cross filters: ${componentName}`);
+      return reactComponent;  // Devolver el componente que coincide
+    }
+
+    // Recursivamente buscar en los componentes hijos
+    if (reactComponent.child) {
+      const foundInChild = traverseReactTree(reactComponent.child);
+      if (foundInChild) return foundInChild;
+    }
+
+    // Buscar en los componentes hermanos
+    if (reactComponent.sibling) {
+      const foundInSibling = traverseReactTree(reactComponent.sibling);
+      if (foundInSibling) return foundInSibling;
+    }
+
+    return null;
+  }
+
+  return traverseReactTree(rootComponent);
+}
+
+export async function activarTab(tabKey) {
+
+  const inicio = await new Promise((resolve) => {
+
+    setTimeout(() => { // Pequeño retraso para asegurar que los componentes estén renderizados
+
+      resolve(findAnyReactComponentAsync());
+
+    }, 100); 
+
+  });
+
+
+
+  const inicio_dev = findAppComponent(inicio);
+
+
+
+  await new Promise(resolve => {
+
+    traverseReactTreeForActivateTab(inicio_dev, tabKey, resolve); 
+
+  });
+
+}
+
+async function findAnyReactComponentAsync() {
+
+  const allElements = document.querySelectorAll('*');
+
+  for (let i = 0; i < allElements.length; i++) {
+
+    const element = allElements[i];
+
+    const reactComponent = findReactComponent(element);
+
+    if (reactComponent) {
+
+      return reactComponent;findReactComponent
+
+    }
+
+  }
+
+  return null;
+
+}
+export function traverseReactTreeForActivateTab(reactComponent, tabKey) {
+  if (!reactComponent) return null;
+
+  const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.namefindReactComponent || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+  const props = reactComponent.memoizedProps || reactComponent.props; 
+ 
+  // Verificar si el componente es de tipo "TAB"
+  if (props?.tab && props.tab.key && props.tab.key.includes("TAB") && !props.tab.key.includes("TABS"))  {
+  
+    console.log("pase",reactComponent);
+    // Buscar componentes con props.tab y props.tab.key que coincida con tabKey
+    if (props.tab.key === tabKey) {
+      console.log(`Nombre del componente: ${componentName}`);
+      console.log(`Detalles del componente que cumple con los criterios:`, reactComponent);
+      console.log(`Propiedades del componente:`, props);
+      if (typeof props.onClick === 'function') {
+        props.onClick();findReactComponent
+      }
+      return props; // Detener la búsqueda una vez que se encuentra el primer componente que cumple los criterios
+    }
+  }
+
+  // Recorrer nodos hijos recursivamente
+  if (reactComponent.child) {
+    traverseReactTreeForActivateTab(reactComponent.child, tabKey); 
+  }
+
+  // Recorrer nodos hermanos
+  if (reactComponent.sibling) {
+    traverseReactTreeForActivateTab(reactComponent.sibling, tabKey);
+  }
+}
+export function obtenerChartConfigurationProduccion(rootComponent) {
+  if (!rootComponent) {
+    return null;
+  }
+
+  function traverseReactTreeP(reactComponent) {
+    if (!reactComponent) return null;
+
+    const props = reactComponent.memoizedProps || {};
+
+    // Verificar si el componente tiene chartConfiguration en sus props y dashboardInfo directamente debajo de props
+    if (props.chartConfiguration && props.dashboardInfo) {
+      return props.chartConfiguration;
+    }
+
+    // Recorrer nodos hijos recursivamente
+    if (reactComponent.child) {
+      const result = traverseReactTreeP(reactComponent.child);
+      if (result) return result;
+    }
+
+    // Recorrer nodos hermanos
+    if (reactComponent.sibling) {
+      const result = traverseReactTreeP(reactComponent.sibling);
+      if (result) return result;
+    }
+
+    return null;
+  }
+
+  return traverseReactTreeP(rootComponent.current);
+}
+
+// Función para desarrollo
+export function obtenerChartConfigurationDesarrollo() {
+  const inicio = findAnyReactComponent();
+  const inicio_dev = findAppComponent(inicio);findReactComponent
+  const target = traverseReactTree(inicio_dev, 'Dashboard'); // Buscamos el componente por su nombre en desarrollo
+  return target ? target.memoizedProps.chartConfiguration : null; // Devolver chartConfiguration si se encuentra el componente
+}
+export function traverseReactTreeForDashboard(reactComponent) { 
+  if (!reactComponent) return null;
+
+  const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+
+  // Buscar el componente 'Dashboard'
+  if (componentName === 'Dashboard') { 
+    console.log('Found Dashboard component:', reactComponent);
+    return reactComponent;
+  }
+
+  // Buscar recursivamente en componentes hijos
+  if (reactComponent.child) {
+    const foundInChild = traverseReactTreeForDashboard(reactComponent.child); 
+    if (foundInChild) return foundInChild;
+  }
+
+  // Buscar en componentes hermanos
+  if (reactComponent.sibling) {
+    const foundInSibling = traverseReactTreeForDashboard(reactComponent.sibling); 
+    if (foundInSibling) return foundInSibling;
+  }
+
+  return null;
+}
+export function traverseAndLogChartComponents(rootComponent, chartId) {
+  if (!rootComponent) {
+    return null;
+  }
+
+  function traverseReactTreeP(reactComponent) {
+    if (!reactComponent) return null;
+
+    const props = reactComponent.memoizedProps || {};
+
+    // Verificar si el componente tiene chartId en sus props Y si coincide con el chartId proporcionado
+    if (props.chartId && props.chartId === chartId) { 
+      // Verificar si el componente tiene chart.queriesResponse o queriesResponse en sus props
+      if (props.chart?.queriesResponse) {
+        return props.chart.queriesResponse;
+      } else if (props.queriesResponse) {
+        return props.queriesResponse;
+      }
+    }
+
+    // Recorrer nodos hijos recursivamente
+    if (reactComponent.child) {
+      const result = traverseReactTreeP(reactComponent.child);
+      if (result) return result; 
+    }
+
+    // Recorrer nodos hermanos
+    if (reactComponent.sibling) {
+      const result = traverseReactTreeP(reactComponent.sibling);
+      if (result) return result; 
+    }
+
+    return null;
+  }
+
+  return traverseReactTreeP(rootComponent.current);
+}
+
+export function traverseReactTreeForChart(reactComponent, targetName, dashboardId, chartIdToFind) {
+  if (!reactComponent) return null;
+
+  const componentName = reactComponent.elementType?.displayName || reactComponent.elementType?.name || reactComponent.type?.displayName || reactComponent.type?.name || 'Unknown';
+  const props = reactComponent.memoizedProps || {};
+
+  // Buscar componentes de tipo 'Chart' con queriesResponse, chartId y que coincidan con el chartIdToFind
+  if (componentName === targetName && props.queriesResponse && props.chartId && props.chartId === chartIdToFind) {
+      console.log('Found target component:', reactComponent);
+      return reactComponent;
+  }
+
+  // Buscar recursivamente en componentes hijos
+  if (reactComponent.child) {
+      const foundInChild = traverseReactTreeForChart(reactComponent.child, targetName, dashboardId, chartIdToFind);
+      if (foundInChild) return foundInChild;
+  }
+
+  // Buscar en componentes hermanos
+  if (reactComponent.sibling) {
+      const foundInSibling = traverseReactTreeForChart(reactComponent.sibling, targetName, dashboardId, chartIdToFind);
+      if (foundInSibling) return foundInSibling;
+  }
+
+  return null;
+}
+
+
+
+
+export function findReactComponent(dom) {
   if (isProduction()) {
     for (const key in dom) {
       if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber$')) {
@@ -276,7 +580,7 @@ function navigateToRoot(reactComponent) {
 }
 
 // Function to find any React component in the document
-function findAnyReactComponent() {
+export function findAnyReactComponent() {
   const allElements = document.querySelectorAll('*');
   for (let i = 0; i < allElements.length; i++) {
     const element = allElements[i];
@@ -289,7 +593,7 @@ function findAnyReactComponent() {
 }
 
 // Función para encontrar la raíz del árbol de React aplica para produccion
-function findReactRoot(reactComponent) {
+export function findReactRoot(reactComponent) {
   if (!reactComponent) return null;
 
   let currentComponent = reactComponent;
@@ -307,7 +611,7 @@ function findReactRoot(reactComponent) {
 
 // seguimos en ambiente de produccion
 // Función para registrar los componentes React que cumplen con los criterios especificados
-function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '', tabKey = '') {
+export function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, filter_super = '', tabKey = '') {
   if (!rootComponent) {
     return null;
   }
@@ -409,7 +713,7 @@ function traverseAndLogComponents(rootComponent, sliceId, dashboardId, type, fil
 }
 
 // Function to traverse the React tree and find the App component
-function findAppComponent(reactComponent) {
+export function findAppComponent(reactComponent) {
   if (!reactComponent) return null;
 
   let currentComponent = reactComponent;
@@ -435,7 +739,7 @@ function findAppComponent(reactComponent) {
 }
 
 
-function searchComponent(rootComponent, targetName, sliceId, dashboardId, type, tabKey = 'none') {
+export function searchComponent(rootComponent, targetName, sliceId, dashboardId, type, tabKey = 'none') {
   if (!rootComponent) {
     
     return null;
@@ -603,7 +907,7 @@ const removeCrossFilterAndUpdate = (component) => {
     console.error('Component actions not found or updateDataMask is missing:', component);
   }
 };
-function extractCrossFilterDetails(crossFilters) {
+export function extractCrossFilterDetails(crossFilters) {
   return crossFilters.map(filter => ({
     column: filter.column,
     name: filter.name,
@@ -611,42 +915,98 @@ function extractCrossFilterDetails(crossFilters) {
     emitterId: filter.emitterId,
   }));
 }
+// function TextToSpeech(s) {
+//   return new Promise((resolve, reject) => {
+//     var sModelId = "tts-1";
+//     var sVoiceId = "echo";
+//     obtenerClavesAPI().then(([CVE_API_KEY, CVE_apiKey]) => {
+//       if (CVE_API_KEY && CVE_apiKey) {
+//         API_KEY = CVE_API_KEY;
+//         apiKey = CVE_apiKey
+//         console.log('API_KEY:', API_KEY);
+//         console.log('apiKey:', apiKey);
+//       }
+//     });
+//     //var API_KEY = API_KEY;
+//     var oHttp = new XMLHttpRequest();
+//     oHttp.onreadystatechange = function () {
+//       if (oHttp.readyState === 4) {
+//         if (oHttp.status === 200) {
+//           var oBlob = new Blob([oHttp.response], { "type": "audio/mpeg" });
+//           var audioURL = window.URL.createObjectURL(oBlob);
+//           var audio = new Audio(audioURL);
+//           resolve(audio);
+//         } else {
+//           reject('Error en la solicitud: ' + oHttp.statusText);
+//         }
+//       }
+//     };
+//     oHttp.open("POST", "https://api.openai.com/v1/audio/speech");
+//     oHttp.setRequestHeader("Accept", "audio/mpeg");
+//     oHttp.setRequestHeader("Content-Type", "application/json");
+//     oHttp.setRequestHeader("Authorization", "Bearer " + API_KEY);
+     
+//     console.log("la s",s);
+//     var data = {
+//         model: sModelId,
+//         input: s,
+//         voice: sVoiceId
+//     };
+//     oHttp.responseType = "arraybuffer";
+//     console.log("data",data);
+//     oHttp.send(JSON.stringify(data));
+    
+//   });
+// }
+function isAudioEnabledf() {
+  return localStorage.getItem('audioEnabled') === 'true';
+}
 function TextToSpeech(s) {
   return new Promise((resolve, reject) => {
     var sModelId = "tts-1";
     var sVoiceId = "echo";
-    var API_KEY = process.env.API_KEY;
-    var oHttp = new XMLHttpRequest();
-    oHttp.onreadystatechange = function () {
-      if (oHttp.readyState === 4) {
-        if (oHttp.status === 200) {
-          var oBlob = new Blob([oHttp.response], { "type": "audio/mpeg" });
-          var audioURL = window.URL.createObjectURL(oBlob);
-          var audio = new Audio(audioURL);
-          resolve(audio);
-        } else {
-          reject('Error en la solicitud: ' + oHttp.statusText);
-        }
+
+    obtenerClavesAPI().then(([CVE_API_KEY, CVE_apiKey]) => {
+      if (CVE_API_KEY && CVE_apiKey) {
+        var API_KEY = CVE_API_KEY;
+        console.log('API_KEY:', API_KEY);
+        console.log('apiKey:', CVE_apiKey);
+
+        var oHttp = new XMLHttpRequest();
+        oHttp.onreadystatechange = function () {
+          if (oHttp.readyState === 4) {
+            if (oHttp.status === 200) {
+              var oBlob = new Blob([oHttp.response], { "type": "audio/mpeg" });
+              var audioURL = window.URL.createObjectURL(oBlob);
+              var audio = new Audio(audioURL);
+              resolve(audio);
+            } else {
+              reject('Error en la solicitud: ' + oHttp.statusText);
+            }
+          }
+        };
+        oHttp.open("POST", "https://api.openai.com/v1/audio/speech");
+        oHttp.setRequestHeader("Accept", "audio/mpeg");
+        oHttp.setRequestHeader("Content-Type", "application/json");
+        oHttp.setRequestHeader("Authorization", "Bearer " + API_KEY);
+        
+        console.log("la s", s);
+        var data = {
+          model: sModelId,
+          input: s,
+          voice: sVoiceId
+        };
+        oHttp.responseType = "arraybuffer";
+        console.log("data", data);
+        oHttp.send(JSON.stringify(data));
+      } else {
+        reject('No se obtuvieron las claves API');
       }
-    };
-    oHttp.open("POST", "https://api.openai.com/v1/audio/speech");
-    oHttp.setRequestHeader("Accept", "audio/mpeg");
-    oHttp.setRequestHeader("Content-Type", "application/json");
-    oHttp.setRequestHeader("Authorization", "Bearer " + API_KEY);
-     
-    console.log("la s",s);
-    var data = {
-        model: sModelId,
-        input: s,
-        voice: sVoiceId
-    };
-    oHttp.responseType = "arraybuffer";
-    console.log("data",data);
-    oHttp.send(JSON.stringify(data));
-    
+    }).catch(error => {
+      reject('Error al obtener las claves API: ' + error);
+    });
   });
 }
-
 
 function playTextWithSubtitles(text) {
   return new Promise((resolve, reject) => {
@@ -662,8 +1022,8 @@ function playTextWithSubtitles(text) {
       subtitleDiv.style.zIndex = '1000';
       document.body.appendChild(subtitleDiv);
       subtitleDiv.innerText = text;
-
-      if (!isAudioEnabled) {
+      //handleAudioCheckboxChange();
+      if (!isAudioEnabledf()) {
           console.log("Audio is disabled, not playing.");
           setTimeout(() => {
               document.body.removeChild(subtitleDiv);
@@ -709,7 +1069,8 @@ function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
               if (phrases.length === 0 || (phrases.length === 1 && phrases[0].text.trim().length === 1 && ['.', '-', '—'].includes(phrases[0].text.trim()))) {
                 console.log("No substantial subtitles found or a special character is present.");
                 subtitleDiv.innerText = phrases.length === 0 ? "" : phrases[0].text.trim();
-                if (!isAudioEnabled) {
+                //handleAudioCheckboxChange();
+                if (!isAudioEnabledf()) {
                   setTimeout(() => {
                     document.body.removeChild(subtitleDiv);
                     resolve();
@@ -723,8 +1084,8 @@ function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
                 };
                 return;
               }
-
-              if (!isAudioEnabled) {
+              //handleAudioCheckboxChange()
+              if (!isAudioEnabledf()) {
                 console.log("Audio is disabled, not playing.");
                 let lastTime = 0;
                 phrases.forEach((phrase, index) => {
@@ -793,6 +1154,31 @@ function playAudioWithGroupedSubtitles(audioPath, subtitlePath) {
 //               if (!isAudioEnabled) {
 //                 console.log("Audio is disabled, not playing.");
 //                 // Simula el paso de tiempo y actualiza los subtítulos
+// AntdIcon
+// SearchOutlined
+// ForwardRef
+// AntdIcon
+// IconReact
+// span
+// Styled
+// span
+// Styled
+// SliceHeaderControls
+// withRouter
+// Router.Consumer
+// SliceHeaderControls
+// NoAnimationDropdown
+// Dropdown
+// Dropdown
+// ForwardRef
+// Trigger
+// Context.Provider
+// EmotionCssPropInternal 
+// key
+// VerticalDotsTrigger
+// div
+// Styled
+
 //                 let lastTime = 0;
 //                 phrases.forEach((phrase, index) => {
 //                   setTimeout(() => {
@@ -1095,7 +1481,7 @@ function handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, 
 
 class Dashboard extends React.PureComponent {
   static contextType = PluginContext;
-  
+ 
 
   static onBeforeUnload(hasChanged) {
     if (hasChanged) {
@@ -1187,13 +1573,14 @@ class Dashboard extends React.PureComponent {
 
 componentDidUpdate() {
   this.applyCharts();
+  
   //this.initializeAudioCheckbox();
 }
 
 
   componentDidMount() {
     console.log('Dashboard component mounted Felipe');
-
+   
     const bootstrapData = getBootstrapData();
     const { dashboardState, layout } = this.props;
     const eventData = {
@@ -1220,11 +1607,20 @@ componentDidUpdate() {
     }
     window.addEventListener('visibilitychange', this.onVisibilityChange);
     this.applyCharts();
-    this.setupSocketConnection(); }
+    this.setupSocketConnection(); 
+    this.audioCheckInterval = setInterval(this.checkAudioState, 1000);}
  
 
 
-    setupSocketConnection() {
+
+  
+setupSocketConnection() {
+  obtenerClavesAPI().then(([API_KEY, apiKey]) => {
+    if (API_KEY && apiKey) {
+      console.log('API_KEY:', API_KEY);
+      console.log('apiKey:', apiKey);
+
+      // Hacer una llamada a la API para obtener el token
       axios.post(`${tokenServerUrl}/auth/get-token`, {}, {
         headers: {
           'x-api-key': `${apiKey}`
@@ -1234,197 +1630,91 @@ componentDidUpdate() {
         console.log(tokenServerUrl);
         const token = response.data.token;
         const user_id = "1";  // Ajusta el user_id según tus necesidades
-  
+
         // Conectarse al servidor de socket.io con el token
         const socket = io(`${socketServerUrl}`, {
           query: { token }
         });
-  
+
         // Manejar eventos del socket
         socket.on('connect', () => {
           console.log('Connected to Socket.IO server', socket.id);
           socket.emit('join_room', { token: token, user_id: user_id });
         });
-  
-        //window.handleSupersetMessage = (slice_id, dashboard_id, type, filter = null)
-        // Manejar los mensajes de socket_action
-        
-        
-        //No usar mensaje dashboard, para lo de las instrucciones
-        // socket.on('dashboard', ({ type, slice_id, dashboard_id,filter_super,explicacion,idInstPresentacion,usrId }) => {
-          
-        //   if (typeof window.handleSupersetMessage === 'function') {
-        //     console.log('Escucho', socket.id);
-        //     window.handleSupersetMessage(slice_id, dashboard_id, type,filter_super,explicacion);
 
-        //   if (idInstPresentacion) {
-        //     console.log('finInst', idInstPresentacion,1)
-        //     console.log('finInst',idInstPresentacion,2);
-        //     const message = {
-        //       room: usrId,
-        //       type: 'finInstruccion',
-        //       idInstPresentacion: idInstPresentacion,
-        //       dashboard_id: dashboard_id,
-        //       socket_id: socket.id,
-        //       user_id: usrId  // Mantener el user_id original
-        //     };
-            
-        //     console.log('finInst',idInstPresentacion);
-        //     socket.emit('message', message);
-        //   }
-        //   } else {
-        //     console.error(`Action ${type} is not a valid function`);
-        //   }
-          
-        //   //this.fetchChartData(5)
-        //   //.then(query => console.log('Query:', query))
-        //   //.catch(error => console.error('Error:', error));
-        // });
+        let lastSequenceNumber = 0;
 
+        socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacion, usrId, idInstPresentacion, audio_path, sub_path }) => {
+          if (idInstPresentacion) {
+            if (typeof window.handleSupersetMessage === 'function') {
+              console.log('Escuchando:', socket.id);
+              let promises = [handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion)];
 
-let  lastSequenceNumber = 0;
-// const delayExecution = (fn, delay, ...args) => {
-//   setTimeout(() => {
-//     fn(...args);
-//   }, delay);
-// };
+              if (explicacion) {
+                promises.push(playTextWithSubtitles(explicacion));
+              } else {
+                console.log("No se proporcionó una explicación válida, se omite playTextWithSubtitles.");
+              }
 
-socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacion,usrId,idInstPresentacion, audio_path, sub_path}) => {
-  
- 
-  if (idInstPresentacion) {
-    if (typeof window.handleSupersetMessage === 'function') {
-        console.log('Escuchando:', socket.id);
-        let promises = [handleSupersetMessageAsync(slice_id, dashboard_id, type, filter_super, explicacion)];
-
-        // Solo agregar playTextWithSubtitles a las promesas si explicacion no es undefined o un string vacío
-        if (explicacion) {
-            promises.push(playTextWithSubtitles(explicacion));
-        } else {
-            console.log("No se proporcionó una explicación válida, se omite playTextWithSubtitles.");
-        }
-        Promise.all(promises).then(() => {
-            const message = {
-                room: usrId,
-                type: 'finInstruccion',
-                idInstPresentacion: idInstPresentacion,
-                dashboard_id: dashboard_id,
-                socket_id: socket.id,
-                user_id: usrId,
-            };
-            console.log('finInst', idInstPresentacion);
-            socket.emit('message', message);  // Emitir el evento 'finInstruccion' después de completar ambas tareas
-        }).catch(error => {
-            console.error("Error al ejecutar funciones:", error);
+              Promise.all(promises).then(() => {
+                const message = {
+                  room: usrId,
+                  type: 'finInstruccion',
+                  idInstPresentacion: idInstPresentacion,
+                  dashboard_id: dashboard_id,
+                  socket_id: socket.id,
+                  user_id: usrId,
+                };
+                console.log('finInst', idInstPresentacion);
+                socket.emit('message', message);
+              }).catch(error => {
+                console.error("Error al ejecutar funciones:", error);
+              });
+            } else {
+              console.error(`Action ${type} is not a valid function`);
+            }
+          } else {
+            if (typeof window.handleSupersetMessage === 'function') {
+              console.log('Escucho', socket.id);
+              window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
+            } else {
+              console.error(`Action ${type} is not a valid function`);
+            }
+          }
         });
-    } else {
-        console.error(`Action ${type} is not a valid function`);
-    }
 
-
-
-  
-
-// alternativa funcional abajo, descomentar a partir de aqui
-          // if (typeof window.handleSupersetMessage === 'function') {
-          //   setTimeout(() => {
-          //     playAudioWithGroupedSubtitles(audio_path, sub_path);
-          // }, 0);
-          //     console.log('Escucho', socket.id);
-          //     window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
-
-          //     const message = {
-          //         room: usrId,
-          //         type: 'finInstruccion',
-          //         idInstPresentacion: idInstPresentacion,
-          //         dashboard_id: dashboard_id,
-          //         socket_id: socket.id,
-          //         user_id: usrId,
-                  
-          //     };
-
-              
-          //     console.log('finInst', idInstPresentacion);
-          //     socket.emit('message', message);  // Emitir el evento 'finInstruccion'
-          // } else {
-          //     console.error(`Action ${type} is not a valid function`);
-          // }
- 
-// hasta aqui descomentar
-
-
-      // }
-  } else {
- //     Lógica para otras invocaciones
-      if (typeof window.handleSupersetMessage === 'function') {
-          console.log('Escucho', socket.id);
-          window.handleSupersetMessage(slice_id, dashboard_id, type, filter_super, explicacion);
-      } else {
-          console.error(`Action ${type} is not a valid function`);
-      }
-  }
-});
-        
-
-      socket.on('request_dashboard_id', (data) => {
-        const dashboardId = getDashboardIdFromUrl();  // Función para obtener el ID del dashboard desde la URL
-        const userId = data.user_id;  // Ajustar esto para obtener el user_id del mensaje original
-        
-
-        const message = {
-          room: userId,
-          type: 'dashboard_id_response',
-          dashboard_id: dashboardId,
-          socket_id: socket.id,
-          user_id: userId  // Mantener el user_id original
-        };
-
-      if (dashboardId) {
-         socket.emit('message', message);
-         console.log('Dashboard ID response emitted:', message);
-      }
-    });
-
-        /* socket.on('request_dashboard_id', () => {
+        socket.on('request_dashboard_id', (data) => {
           const dashboardId = getDashboardIdFromUrl();
-          const userId = '1'; // Ajusta esto según sea necesario
+          const userId = data.user_id;
+
           const message = {
-          room: userId,
-          type: 'dashboard_id_response',
-          dashboard_id: dashboardId,
-          socket_id: socket.id,
-          timestamp:timesatmp,
+            room: userId,
+            type: 'dashboard_id_response',
+            dashboard_id: dashboardId,
+            socket_id: socket.id,
+            user_id: userId
           };
+
           if (dashboardId) {
             socket.emit('message', message);
-            console.log('Dashboard ID response emitted:', { dashboard_id: dashboardId, socket_id: socket.id }); 
-          }
-        }); */
-
-        /* socket.on('force_refresh', ({ type, slice_id, dashboard_id }) => {
-          if (typeof window[type] === 'function') {
-            console.log('Escucho', socket.id);
-            window[type](slice_id, dashboard_id);
-          } else {
-            console.error(`Action ${type} is not a valid function`);
+            console.log('Dashboard ID response emitted:', message);
           }
         });
 
-        socket.on('cross_filter', ({ type, slice_id, dashboard_id,filter }) => {
-          if (typeof window[type] === 'function') {
-            console.log('Escucho', socket.id);
-            window[type](slice_id, dashboard_id,filter);
-          } else {
-            console.error(`Action ${type} is not a valid function`);
-          }
-        });  
-   */
+        // Otros eventos y lógica aquí...
+
       })
       .catch(error => {
         console.error('Error obteniendo el token:', error);
       });
+
+    } else {
+      console.error('API_KEY o apiKey no están definidos');
     }
-  
+  }).catch(error => {
+    console.error('Error al obtener las claves API:', error);
+  });
+}
 
     
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -1458,16 +1748,6 @@ socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacio
   }
 
   
-// initializeAudioCheckbox() {
-//   const audioCheckbox = document.getElementById('enableAudioCheckbox');
-  
-//   // Cargar el estado guardado cuando la página se carga
-//   const audioEnabled = localStorage.getItem('audioEnabled');
-//   audioCheckbox.checked = (audioEnabled === 'true');
-
-//   // Asignar el manejador de evento
-//   audioCheckbox.addEventListener('change', handleAudioCheckboxChange);
-// }
 
 
   applyCharts() {
@@ -1506,8 +1786,9 @@ socket.on('dashboard', ({ type, slice_id, dashboard_id, filter_super, explicacio
   componentWillUnmount() {
     window.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.props.actions.clearDataMaskState();
+    clearInterval(this.audioCheckInterval);
   }
-
+  
   onVisibilityChange() {
     if (document.visibilityState === 'hidden') {
       // from visible to hidden
